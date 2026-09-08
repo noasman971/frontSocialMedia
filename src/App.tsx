@@ -1,15 +1,15 @@
-import { PostList } from "./features/posts/PostList";
+import DetailPost from "./features/posts/DetailPost";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {PostList} from "./features/posts/PostList.tsx";
 
 function App() {
   return (
-    <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      <h1>Liste des posts</h1>
-      <PostList />
-
-        <h1 className="text-3xl font-bold underline">
-        Hello world!
-      </h1>
-    </main>
+    <BrowserRouter>
+        <Routes>
+            <Route path="/" element={<PostList />} />
+            <Route path="/posts/:id" element={<DetailPost />} />
+        </Routes>
+    </BrowserRouter>
   );
 }
 

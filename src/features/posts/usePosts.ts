@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiGet, type Post } from "./posts.api";
+import { apiGet, type Post, type PostDetails } from "./posts.api";
 
 export type State<T> =
   | { status: "loading" }
@@ -31,6 +31,38 @@ export function usePosts(): State<Post[]> {
 
     return () => controller.abort();
   }, []);
+
+  return state;
+}
+
+
+
+export function useDetailsPosts(id: string | undefined): State<PostDetails> {
+  const [state, setState] = useState<State<PostDetails>>({
+    status: "loading",
+  });
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    setState({ status: "loading" });
+
+    apiGet<PostDetails>(`/posts${id}.json`, controller.signal)
+        .then((res) => {
+          if (!res.ok) {
+            setState({ status: "error", message: res.error });
+            return;
+          } else {
+            if (!res.data) {
+              setState({ status: "empty" });
+            } else {
+              setState({ status: "success", data: res.data });
+            }
+          }
+        });
+
+    return () => controller.abort();
+  }, [id]);
 
   return state;
 }

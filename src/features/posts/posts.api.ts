@@ -2,6 +2,23 @@ export type ApiResult<T> =
   | { ok: true; data: T }
   | { ok: false; error: string };
 
+export type Author = {
+  id: string;
+  username: string;
+  email: string;
+  avatarUrl: string | null;
+};
+
+export type PostDetails = {
+  id: string;
+  content: string;
+  imageUrl: string | null;
+  createdAt: string;
+  author: Author;
+  comments: Comment[];
+  likeCount: number;
+};
+
 export type Post = {
   id: string;
   content: string;

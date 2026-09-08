@@ -1,6 +1,12 @@
 import { usePosts } from "./usePosts";
+import { useNavigate } from "react-router-dom";
 
 export function PostList() {
+    const navigate = useNavigate();
+    const gotoDetail = (id: string) => {
+        navigate(`/posts/${id}`);
+    };
+
     const state = usePosts();
 
     switch (state.status) {
@@ -17,9 +23,14 @@ export function PostList() {
             return (
                 <ul>
                     {state.data.map((post) => (
-                        <li key={post.id}>
-                            <strong>@{post.author.username}</strong>: {post.content}
-                        </li>
+                        <>
+                            <li key={post.id}>
+                                <strong>@{post.author.username}</strong>: {post.content}
+                            </li>
+                            <button onClick={() => gotoDetail(post.id)}>
+                                Voir les détails
+                            </button>
+                        </>
                     ))}
                 </ul>
             );
