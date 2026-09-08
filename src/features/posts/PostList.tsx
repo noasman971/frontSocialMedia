@@ -19,7 +19,8 @@ export function PostList() {
     // 300px (rootMargin) of anticipation
     const observer = new IntersectionObserver(
       (entries) => {
-        const [entry] = entries;
+        const entry = entries[0];
+
         if (entry.isIntersecting && hasMore) {
           loadMore();
         }
