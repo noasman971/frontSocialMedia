@@ -1,11 +1,5 @@
 import { z } from "zod";
-
-/**
- * Api Generic Response
- */
-export type ApiResult<T> =
-  | { ok: true; data: T }
-  | { ok: false; error: string };
+import { apiGet, type ApiResult } from "../shared/api";
 
 /**
  * Zod Schema for Author
@@ -13,10 +7,22 @@ export type ApiResult<T> =
 export const AuthorSchema = z.object({
   id: z.string(),
   username: z.string(),
+  email: z.string().optional(),
+  avatarUrl: z.string().nullable().optional(),
 });
 
 /**
- * Zod Schema for Post
+ * Zod Schema for Comment on a Post
+ */
+export const CommentSchema = z.object({
+  id: z.string(),
+  content: z.string(),
+  createdAt: z.string(),
+  author: AuthorSchema.nullable().optional(),
+});
+
+/**
+ * Zod Schema for Post in list (feed)
  */
 export const PostSchema = z.object({
   id: z.string(),
@@ -28,75 +34,39 @@ export const PostSchema = z.object({
   commentCount: z.number().default(0),
 });
 
-
-export type Author = {
-  id: string;
-  username: string;
-  email: string;
-  avatarUrl: string | null;
-};
-
-export type PostDetails = {
-  id: string;
-  content: string;
-  imageUrl: string | null;
-  createdAt: string;
-  author: Author;
-  comments: Comment[];
-  likeCount: number;
-};
+/**
+ * Zod Schema for Post Details (single post page with full comments and author)
+ */
+export const PostDetailsSchema = z.object({
+  id: z.string(),
+  content: z.string(),
+  imageUrl: z.string().nullable().optional(),
+  createdAt: z.string(),
+  author: AuthorSchema.nullable(),
+  comments: z.array(CommentSchema).default([]),
+  likeCount: z.number().default(0),
+});
 
 /**
- * Our PostList is an array of Post
+ * List of posts schema
  */
 export const PostsListSchema = z.array(PostSchema);
 
-// TypeScript type is now Zod Type
+// TypeScript types inferred from Zod schemas
 export type Post = z.infer<typeof PostSchema>;
+export type PostDetails = z.infer<typeof PostDetailsSchema>;
+export type Comment = z.infer<typeof CommentSchema>;
 
 /**
- * Generic Fetch Helper with Zod and AbortController
- * @param url URL of the API endpoint
- * @param schema Zod schema to validate the data
- * @param signal AbortSignal to cancel the request if needed
- */
-export async function apiGet<T>(url: string, schema: z.ZodType<T>, signal?: AbortSignal): Promise<ApiResult<T>> {
-  try {
-    const res = await fetch(url, { signal });
-
-    if (!res.ok) {
-      return { ok: false, error: `Erreur HTTP ${res.status}` };
-    }
-
-    // We change to unknown type because we don't know yet if the data is valid
-    const data: unknown = await res.json();
-
-    // It's zod who'll do the runtime validation (safeParse)
-    const parsed = schema.safeParse(data);
-    if (!parsed.success) {
-      return {
-        ok: false,
-        error: `Zod thinks there's something wrong with the API response: ${parsed.error.message}`,
-      };
-    }
-
-    return { ok: true, data: parsed.data };
-  } catch (e: unknown) {
-    if (e instanceof Error) {
-      // If it's abort from AbortController, ignore it
-      if (e.name === "AbortError") {
-        return { ok: false, error: "Requete annulee" };
-      }
-      return { ok: false, error: e.message };
-    }
-    return { ok: false, error: "Erreur inconnue" };
-  }
-}
-
-/**
- * Specific call for fetchs all posts from the feed
+ * Specific call for fetching all posts from the feed
  */
 export async function fetchPosts(signal?: AbortSignal): Promise<ApiResult<Post[]>> {
   return apiGet("/api/posts", PostsListSchema, signal);
 }
 
+/**
+ * Fetch a single post with comments by id
+ */
+export async function fetchPostById(id: string, signal?: AbortSignal): Promise<ApiResult<PostDetails>> {
+  return apiGet(`/api/posts/${id}`, PostDetailsSchema, signal);
+}

@@ -1,4 +1,4 @@
-import {useDetailsPosts} from "./usePosts.ts";
+import { useDetailsPosts } from "./usePosts";
 import { useParams } from "react-router-dom";
 
 export default function DetailPost() {
@@ -18,7 +18,7 @@ export default function DetailPost() {
         case "success":
             return (
                 <ul>
-                    <p>{state.data.author.username}</p>
+                    <p>{state.data.author?.username ?? "Utilisateur inconnu"}</p>
                 </ul>
             );
 
