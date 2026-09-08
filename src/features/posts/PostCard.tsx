@@ -1,34 +1,14 @@
+import { Link } from "react-router-dom";
 import type { Post } from "./posts.api";
+import { formatDate } from "../shared/date";
 
 type PostCardProps = {
   // we ensure that the post card contain a Post (id, content, author, img, etc...)
   post: Post;
 };
 
-/**
- * AI sry
- * Formats an ISO date string into a shorter date format
- * @param dateStr ISO date string from database
- */
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return "";
-
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (diffInSeconds < 60) return "À l'instant";
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) return `${diffInMinutes} min`;
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `${diffInHours} h`;
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) return `${diffInDays} j`;
-
-  return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
-}
-
 export function PostCard({ post }: PostCardProps) {
+
   // Ensure unsername is not null
   const username = post.author?.username ?? "Utilisateur inconnu";
   // create avatar from first letters of the username, uppercase them (because in db they are lowercase)
@@ -54,23 +34,21 @@ export function PostCard({ post }: PostCardProps) {
             </span>
           </div>
         </div>
-        <button
-          className="text-text-secondary hover:text-text-primary text-sm p-1"
-        >
+        <button className="text-text-secondary hover:text-text-primary text-sm p-1">
           •••
         </button>
       </div>
 
-      {/* Optional Post Image */}
+      {/* Optional Post Image - Clickable to open details */}
       {post.imageUrl && (
-        <div className="rounded-lg overflow-hidden border border-border bg-elevated">
+        <Link to={`/posts/${post.id}`} className="block rounded-lg overflow-hidden border border-border bg-elevated">
           <img
             src={post.imageUrl}
             alt={`Publication de ${username}`}
             loading="lazy"
-            className="w-full max-h-[500px] object-cover"
+            className="w-full max-h-[500px] object-cover hover:opacity-95 transition"
           />
-        </div>
+        </Link>
       )}
 
       {/* Likes & Comments */}
@@ -79,10 +57,10 @@ export function PostCard({ post }: PostCardProps) {
           <span className="font-semibold text-text-primary">{post.likeCount}</span>
           <span>{post.likeCount > 1 ? "J'aimes" : "J'aime"}</span>
         </div>
-        <div className="flex items-center space-x-1">
+        <Link to={`/posts/${post.id}`} className="flex items-center space-x-1 hover:text-text-primary cursor-pointer">
           <span className="font-semibold text-text-primary">{post.commentCount}</span>
           <span>{post.commentCount > 1 ? "commentaires" : "commentaire"}</span>
-        </div>
+        </Link>
       </div>
 
       {/* Post Content */}

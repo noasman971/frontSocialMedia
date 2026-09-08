@@ -1,8 +1,13 @@
-import {type Post, type PostDetails, fetchPosts, fetchDetailPosts} from "./posts.api";
+import { type Post, type PostDetails, fetchPosts, fetchPostById } from "./posts.api";
 import { useEffect, useState, useCallback } from "react";
 
 // the number of post to charge
 const PAGE_SIZE = 10;
+
+
+
+// TODO: j'ai du faire un deuxieme type State pour useDetailPosts
+//comment j'unifie tout ça ? pour mon lazyloading j'en ai besoin
 
 // if sucess, we also need 2 flag for the lazy loading
 export type State<T> =
@@ -11,12 +16,12 @@ export type State<T> =
   | { status: "empty" }
   | { status: "success"; data: T; hasMore: boolean; isLoadingMore: boolean };
 
+// Hook for fetching feed posts with lazy loading
 export function usePosts() {
   const [state, setState] = useState<State<Post[]>>({ status: "loading" });
 
   const [allPosts, setAllPosts] = useState<Post[]>([]);
   const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
-
 
   // Charge data
   useEffect(() => {
@@ -27,10 +32,11 @@ export function usePosts() {
     fetchPosts(controller.signal).then((res) => {
       if (!res.ok) {
         // If the call is not okay by the abort, return, otherwise set state with the error
-        if (res.error === "Requete annulee") return;
+        if (res.isAborted) return;
         setState({ status: "error", message: res.error });
         return;
       }
+
       if (res.data.length === 0) {
         setState({ status: "empty" });
       } else {
@@ -43,6 +49,7 @@ export function usePosts() {
         });
       }
     });
+
     return () => controller.abort();
   }, []);
 
@@ -68,31 +75,46 @@ export function usePosts() {
       isLoadingMore: false,
     });
   }, [state, allPosts, visibleCount]);
+
   return { state, loadMore };
 }
 
+// Hook for fetching a single post by id with real backend and Zod validation
+// Before it was using /posts${id}.json without shared api, now it uses fetchPostById with AbortController
+export type SimpleState<T> =
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "empty" }
+  | { status: "success"; data: T };
 
-export function useDetailsPosts(id: string | undefined): State<PostDetails> {
-  const [state, setState] = useState<State<PostDetails>>({
+export function useDetailsPosts(id: string | undefined): SimpleState<PostDetails> {
+  const [state, setState] = useState<SimpleState<PostDetails>>({
     status: "loading",
   });
 
   useEffect(() => {
+    // If no ID in url, there is something wrong
+    if (!id) {
+      setState({ status: "error", message: "ou est l'dentifiant du post ?" });
+      return;
+    }
+
     const controller = new AbortController();
 
     setState({ status: "loading" });
 
-    fetchDetailPosts(controller.signal).then((res) => {
+    // Call real backend route with shared api and Zod safeParse
+    fetchPostById(id, controller.signal).then((res) => {
       if (!res.ok) {
-        // If the call is not okay by the abort, return, otherwise set state with the error
-        if (res.error === "Requete annulee") return;
+        if (res.isAborted) return;
         setState({ status: "error", message: res.error });
         return;
       }
+
       if (!res.data) {
         setState({ status: "empty" });
       } else {
-        setState({data: res.data, hasMore: false, isLoadingMore: false, status: "success", });
+        setState({ status: "success", data: res.data });
       }
     });
 
