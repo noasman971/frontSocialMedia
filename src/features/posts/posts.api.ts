@@ -1,28 +1,40 @@
-export type ApiResult<T> =
-  | { ok: true; data: T }
-  | { ok: false; error: string };
+import { z } from "zod";
+import { apiGet, type ApiResult } from "../shared/api";
 
-export type Post = {
-  id: string;
-  content: string;
-  author: { id: string; username: string };
-};
+// export type { ApiResult };
 
-// 1. ApiGet avec signal d'annulation (AbortSignal)
-export async function apiGet<T>(url: string, signal?: AbortSignal): Promise<ApiResult<T>> {
-  try {
-    const res = await fetch(url, { signal });
+/**
+ * Zod Schema for Author
+ */
+export const AuthorSchema = z.object({
+  id: z.string(),
+  username: z.string(),
+});
 
-    if (!res.ok) {
-      return { ok: false, error: `Erreur ${res.status}` };
-    }
+/**
+ * Zod Schema for Post
+ */
+export const PostSchema = z.object({
+  id: z.string(),
+  content: z.string(),
+  imageUrl: z.string().nullable().optional(),
+  created_at: z.string(),
+  author: AuthorSchema.nullable(),
+  likeCount: z.number().default(0),
+  commentCount: z.number().default(0),
+});
 
-    const data: T = await res.json();
-    return { ok: true, data };
-  } catch (e: unknown) {
-    if (e instanceof Error) {
-      return { ok: false, error: e.message };
-    }
-    return { ok: false, error: "Erreur inconnue" };
-  }
+/**
+ * Our PostList is an array of Post
+ */
+export const PostsListSchema = z.array(PostSchema);
+
+// TypeScript type is now Zod Type
+export type Post = z.infer<typeof PostSchema>;
+
+/**
+ * Specific call for fetching all posts from the feed
+ */
+export async function fetchPosts(signal?: AbortSignal): Promise<ApiResult<Post[]>> {
+  return apiGet("/api/posts", PostsListSchema, signal);
 }
