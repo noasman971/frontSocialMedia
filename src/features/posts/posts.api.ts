@@ -28,23 +28,26 @@ export const PostSchema = z.object({
   commentCount: z.number().default(0),
 });
 
+export const CommentSchema = z.object({
+  id: z.string(),
+  content: z.string(),
+  created_at: z.string(),
+  author: AuthorSchema.nullable(),
+});
 
-export type Author = {
-  id: string;
-  username: string;
-  email: string;
-  avatarUrl: string | null;
-};
+export type Comment = z.infer<typeof CommentSchema>;
 
-export type PostDetails = {
-  id: string;
-  content: string;
-  imageUrl: string | null;
-  createdAt: string;
-  author: Author;
-  comments: Comment[];
-  likeCount: number;
-};
+export const PostDetailsSchema = z.object({
+  id: z.string(),
+  content: z.string(),
+  imageUrl: z.string().nullable().optional(),
+  created_at: z.string(),
+  author: AuthorSchema.nullable(),
+  comments: z.array(CommentSchema),
+  likeCount: z.number().default(0),
+});
+
+export type PostDetails = z.infer<typeof PostDetailsSchema>;
 
 /**
  * Our PostList is an array of Post
@@ -100,3 +103,7 @@ export async function fetchPosts(signal?: AbortSignal): Promise<ApiResult<Post[]
   return apiGet("/api/posts", PostsListSchema, signal);
 }
 
+
+export async function fetchDetailPosts(signal?: AbortSignal): Promise<ApiResult<PostDetails>> {
+  return apiGet(`/api/posts/${signal}`, PostDetailsSchema, signal);
+}

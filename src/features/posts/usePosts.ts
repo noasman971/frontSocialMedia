@@ -1,4 +1,4 @@
-import { apiGet, type Post, type PostDetails , fetchPosts} from "./posts.api";
+import {type Post, type PostDetails, fetchPosts, fetchDetailPosts} from "./posts.api";
 import { useEffect, useState, useCallback } from "react";
 
 // the number of post to charge
@@ -82,19 +82,19 @@ export function useDetailsPosts(id: string | undefined): State<PostDetails> {
 
     setState({ status: "loading" });
 
-    apiGet<PostDetails>(`/posts${id}.json`, controller.signal)
-        .then((res) => {
-          if (!res.ok) {
-            setState({ status: "error", message: res.error });
-            return;
-          } else {
-            if (!res.data) {
-              setState({ status: "empty" });
-            } else {
-              setState({ status: "success", data: res.data });
-            }
-          }
-        });
+    fetchDetailPosts(controller.signal).then((res) => {
+      if (!res.ok) {
+        // If the call is not okay by the abort, return, otherwise set state with the error
+        if (res.error === "Requete annulee") return;
+        setState({ status: "error", message: res.error });
+        return;
+      }
+      if (!res.data) {
+        setState({ status: "empty" });
+      } else {
+        setState({data: res.data, hasMore: false, isLoadingMore: false, status: "success", });
+      }
+    });
 
     return () => controller.abort();
   }, [id]);
