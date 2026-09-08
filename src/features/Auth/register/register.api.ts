@@ -1,49 +1,45 @@
+import { z } from "zod";
+import { apiPost, type ApiResult } from "../../shared/api";
+
 export interface RegisterPayload {
-    email: string;
-    password: string;
-    username: string;
+  email: string;
+  password: string;
+  username: string;
 }
-export interface RegisterResponse {
-    id: number;
-    email: string;
-    username: string;
-}
-export interface RegisterApiErrors {
-    email?: string;
-    password?: string;
-    username?: string;
-    general?: string;
-}
-export class RegisterApiError extends Error {
-    errors: RegisterApiErrors;
 
-    constructor(errors: RegisterApiErrors) {
-        super("Erreur lors de l'inscription");
-        this.errors = errors;
+export const RegisterResponseSchema = z.object({
+  token: z.string().optional(),
+  user: z
+    .object({
+      id: z.string(),
+      email: z.string(),
+      username: z.string(),
+    })
+    .optional(),
+  error: z.string().optional(),
+});
+
+export type RegisterResponse = z.infer<typeof RegisterResponseSchema>;
+
+// send register request to backend (/api/auth/register)
+export async function registerUser(data: RegisterPayload): Promise<ApiResult<RegisterResponse>> {
+
+  const res = await apiPost<RegisterResponse, RegisterPayload>(
+    "/api/auth/register",
+    data,
+    RegisterResponseSchema
+  );
+
+  if (res.ok) {
+    // If backend returns error (like email already used)
+    if (res.data.error) {
+      return { ok: false, error: res.data.error };
     }
-}
-export async function registerUser(
-    data: RegisterPayload
-): Promise<RegisterResponse> {
-
-    // Simulation du délai d'une API
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    if (data.email === "test@test.fr") {
-        throw new RegisterApiError({
-            email: "Cette adresse email est déjà utilisée.",
-        });
+    // save JWT token in localStorage
+    if (res.data.token) {
+      localStorage.setItem("token", res.data.token);
     }
-    if (data.username.toLowerCase() === "admin") {
-        throw new RegisterApiError({
-            username: "Ce nom d'utilisateur est déjà utilisé.",
-        });
-    }
+  }
 
-
-    return {
-        id: Date.now(),
-        email: data.email,
-        username: data.username,
-    };
+  return res;
 }

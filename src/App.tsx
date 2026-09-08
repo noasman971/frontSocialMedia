@@ -1,39 +1,120 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
 import { PostList } from "./features/posts/PostList";
 import RegisterForm from "./features/Auth/register/RegisterForm";
-import "./App.css";
+import LoginForm from "./features/Auth/login/LoginForm";
+
+// protect routes if user is not logged in
+
+// This is a Route, children will be ReactNode who are inside him (like "<HomePage />")
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const token = localStorage.getItem("token");
+
+  // no token means not authenticated, redirect to register/login
+  if (!token) {
+    return <Navigate to="/register" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+// if we already have token, don't show register/login page again
+function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+}
 
 function HomePage() {
-    return (
-        <main className="home-page">
-            <header className="home-header">
-                <h1>Social Media</h1>
+  // Logout Helper: when we log out, we remove the token and redirect to the login page
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/register"; // HARDCODED REDIRECTION BRRRRRRR c'était plus simple
+  };
 
-                <Link to="/register" className="register-link-button">
-                    S'inscrire
-                </Link>
-            </header>
+  return (
+    <div className="min-h-screen bg-bg text-text-primary flex justify-center">
+      {/* Central Column */}
+      <main className="w-full max-w-[800px] pt-8 px-4 flex flex-col">
+        {/* Header & Navigation */}
+        <header className="flex items-center justify-between pb-6 border-b border-border">
+          <div className="flex items-center gap-6">
+            <button className="text-base font-bold text-text-primary cursor-pointer border-b-2 border-text-primary pb-1">
+              Pour vous
+            </button>
+            <button className="text-base font-medium text-text-secondary hover:text-text-primary cursor-pointer pb-1">
+              Suivi(e)
+            </button>
+          </div>
 
-            <section className="posts-section">
-                <h2>Liste des posts</h2>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-1.5 bg-elevated hover:bg-stroke text-text-primary text-xs font-semibold rounded-lg transition cursor-pointer"
+          >
+            Se déconnecter
+          </button>
+        </header>
 
-                <PostList />
-            </section>
-        </main>
-    );
+        {/* Stories block placeholder */}
+        <section className="py-4 border-b border-border">
+          <div className="text-xs text-text-secondary">
+            {/* Story bar placeholder */}
+          </div>
+        </section>
+
+        {/* Feed Posts */}
+        <section className="pt-4">
+          <PostList />
+        </section>
+      </main>
+    </div>
+  );
 }
 
 function App() {
-    return (
-        <BrowserRouter>
-            <Routes>
-                {/* Page principale */}
-                <Route path="/" element={<HomePage />} />
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Main Feed (only accessible if logged in) */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <HomePage />
+            </ProtectedRoute>
+          }
+        />
 
-                {/* Page inscription */}
-                <Route path="/register" element={<RegisterForm />} />
-            </Routes>
-        </BrowserRouter>
-    );
+        {/* Register page (only if not logged in) */}
+        <Route
+          path="/register"
+          element={
+            <PublicOnlyRoute>
+              <RegisterForm />
+            </PublicOnlyRoute>
+          }
+        />
+
+        {/* Login page (only if not logged in) */}
+        <Route
+          path="/login"
+          element={
+            <PublicOnlyRoute>
+              <LoginForm />
+            </PublicOnlyRoute>
+          }
+        />
+
+        {/* Fallback for unknown routes just in case */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
+
 export default App;
+
