@@ -1,17 +1,29 @@
 import { useState, useRef, type FormEvent, type ChangeEvent } from "react";
 import { createPost } from "./posts.api";
 
-
-// TODO: developper mieux la documentation (algo & callback)
+/*
+  Pseudodo-code:
+  
+  [1] User type text (content) OR choose image file (imageFile).
+  [2] if user click image -> make local preview with URL.createObjectURL(file).
+  [3] When we submit (handleSubmit):
+      [a] check if content or image is present (cant be both empty!).
+      [b] set isSubmitting = true (disable buttons, show loading).
+      [c] make new FormData() and append text + optional image file.
+      [d] call api function createPost(formData) with token.
+      [e] if error -> setErrorMessage(error).
+      [f] if success -> clear input text and image preview.
+      [g] call onPostCreated() callback ! (tell parent HomePage to reload feed).
+*/
 
 interface CreatePostFormProps {
   // Callback called when post is successfully created
-  onPostCreated?: () => void;
+  onPostCreated: () => void;
 }
 
 export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
+  // [1] local state for user text and chosen file
   const [content, setContent] = useState("");
-  //image can be null, preview too, error message too, BUT NOT isSubmitting !
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,7 +31,7 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Image Selection
+  // [2] Image Selection: create object url for preview
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -41,43 +53,44 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
     }
   };
 
-  // You get it, it's in the name
+  // [3] Handle submit
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const trimmed = content.trim();
 
-    // Image is nullable, but not text
+    // [a] Cant be both empty
     if (!trimmed && !imageFile) {
       return;
     }
 
+    // [b] start submitting
     setIsSubmitting(true);
     setErrorMessage(null);
 
-    // Build FormData payload
+    // [c] build formData
     const formData = new FormData();
     formData.append("content", trimmed);
     if (imageFile) {
       formData.append("image", imageFile);
     }
 
+    // [d] api call
     const res = await createPost(formData);
 
     setIsSubmitting(false);
 
+    // [e] handle error
     if (!res.ok) {
       setErrorMessage(res.error);
       return;
     }
 
-    // Reset form state on success
+    // [f] reset form
     setContent("");
     handleRemoveImage();
 
-    // Trigger parent ! (Callback yk)
-    if (onPostCreated) {
-      onPostCreated();
-    }
+    // [g] trigger parent callback
+    onPostCreated();
   };
 
   return (

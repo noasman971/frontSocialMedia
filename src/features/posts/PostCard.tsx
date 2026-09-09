@@ -55,6 +55,14 @@ export function PostCard({ post }: PostCardProps) {
         </Link>
       )}
 
+      {/* Post Content (only if not empty) */}
+      {post.content && post.content.trim() !== "" && (
+        <div className="text-sm text-text-primary leading-relaxed">
+          <span className="font-semibold text-xs mr-2">{username}</span>
+          {post.content}
+        </div>
+      )}
+
       {/* Likes & Comments */}
       <div className="flex items-center space-x-4 text-xs text-text-secondary pt-1">
         <div className="flex items-center space-x-1">
@@ -65,12 +73,6 @@ export function PostCard({ post }: PostCardProps) {
           <span className="font-semibold text-text-primary">{post.commentCount}</span>
           <span>{post.commentCount > 1 ? "commentaires" : "commentaire"}</span>
         </Link>
-      </div>
-
-      {/* Post Content */}
-      <div className="text-sm text-text-primary leading-relaxed">
-        <span className="font-semibold text-xs mr-2">{username}</span>
-        {post.content}
       </div>
     </article>
   );
