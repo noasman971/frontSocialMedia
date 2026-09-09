@@ -1,13 +1,8 @@
 import { useEffect, useRef } from "react";
 import { PostCard } from "./PostCard";
 import { usePosts } from "./usePosts";
-import { useNavigate } from "react-router-dom";
 
 export function PostList() {
-    const navigate = useNavigate();
-    const gotoDetail = (id: string) => {
-        navigate(`/posts/${id}`);
-    };
 
   const { state, loadMore } = usePosts();     // our custom Hook
   // please explain me this...
@@ -85,9 +80,7 @@ export function PostList() {
           {state.data.map((post) => (
               <>
                   <PostCard key={post.id} post={post} />
-                  <button onClick={() => gotoDetail(post.id)}>
-                      Voir les détails
-                  </button>
+
               </>
 
           ))}

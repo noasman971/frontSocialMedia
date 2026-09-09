@@ -19,12 +19,12 @@ export const RegisterResponseSchema = z.object({
   error: z.string().optional(),
 });
 
-export type RegisterResponse = z.infer<typeof RegisterResponseSchema>;
+export type CommentResponse = z.infer<typeof RegisterResponseSchema>;
 
 // send register request to backend (/api/auth/register)
-export async function registerUser(data: RegisterPayload): Promise<ApiResult<RegisterResponse>> {
+export async function registerUser(data: RegisterPayload): Promise<ApiResult<CommentResponse>> {
 
-  const res = await apiPost<RegisterResponse, RegisterPayload>(
+  const res = await apiPost<CommentResponse, RegisterPayload>(
     "/api/auth/register",
     data,
     RegisterResponseSchema

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import type { Post } from "./posts.api";
 import { formatDate } from "../shared/date";
 
@@ -8,6 +8,10 @@ type PostCardProps = {
 };
 
 export function PostCard({ post }: PostCardProps) {
+  const navigate = useNavigate();
+  const gotoDetail = (id: string) => {
+    navigate(`/posts/${id}`);
+  };
 
   // Ensure unsername is not null
   const username = post.author?.username ?? "Utilisateur inconnu";
@@ -34,8 +38,8 @@ export function PostCard({ post }: PostCardProps) {
             </span>
           </div>
         </div>
-        <button className="text-text-secondary hover:text-text-primary text-sm p-1">
-          •••
+        <button className="text-text-secondary hover:text-text-primary text-sm p-1" onClick={() => gotoDetail(post.id)}>
+          Voir les détails
         </button>
       </div>
 
