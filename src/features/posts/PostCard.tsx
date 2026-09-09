@@ -1,6 +1,7 @@
-import {Link, useNavigate} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { Post } from "./posts.api";
 import { formatDate } from "../shared/date";
+import { LikeButton } from "./LikeButton";
 
 type PostCardProps = {
   // we ensure that the post card contain a Post (id, content, author, img, etc...)
@@ -65,10 +66,10 @@ export function PostCard({ post }: PostCardProps) {
 
       {/* Likes & Comments */}
       <div className="flex items-center space-x-4 text-xs text-text-secondary pt-1">
-        <div className="flex items-center space-x-1">
-          <span className="font-semibold text-text-primary">{post.likeCount}</span>
-          <span>{post.likeCount > 1 ? "J'aimes" : "J'aime"}</span>
-        </div>
+        <LikeButton
+          postId={post.id}
+          initialLikeCount={post.likeCount}
+        />
         <Link to={`/posts/${post.id}`} className="flex items-center space-x-1 hover:text-text-primary cursor-pointer">
           <span className="font-semibold text-text-primary">{post.commentCount}</span>
           <span>{post.commentCount > 1 ? "commentaires" : "commentaire"}</span>
