@@ -5,7 +5,7 @@ type PostCardProps = {
   post: Post;
 };
 
-/***
+/**
  * AI sry
  * Formats an ISO date string into a shorter date format
  * @param dateStr ISO date string from database
