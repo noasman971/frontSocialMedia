@@ -22,8 +22,6 @@ export function usePosts() {
   useEffect(() => {
     const controller = new AbortController();
 
-    setState({ status: "loading" });
-
     fetchPosts(controller.signal).then((res) => {
       if (!res.ok) {
         // If the call is not okay by the abort, return, otherwise set state with the error
