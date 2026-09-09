@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 // the number of post to charge
 const PAGE_SIZE = 10;
 
-// TODO: j'ai du faire un deuxieme type State pour useDetailPosts
+// (TODO): j'ai du faire un deuxieme type State pour useDetailPosts
 //comment j'unifie tout ça ? pour mon lazyloading j'en ai besoin
 // SOLUTION: Un state base, et 2 state qui l'herite et complete, classique
 

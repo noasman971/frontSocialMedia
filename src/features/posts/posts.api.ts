@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { apiGet, apiPost, type ApiResult } from "../shared/api";
+import { apiGet, apiPost, apiPostForm, type ApiResult } from "../shared/api";
 
 /**
  * Zod Schema for Author
@@ -53,6 +53,7 @@ export const PostDetailsSchema = z.object({
 export const PostsListSchema = z.array(PostSchema);
 
 // TypeScript types inferred from Zod schemas
+// Qui connaissait le mot Inférence sérieux
 export type Post = z.infer<typeof PostSchema>;
 export type PostDetails = z.infer<typeof PostDetailsSchema>;
 export type Comment = z.infer<typeof CommentSchema>;
@@ -76,4 +77,26 @@ export async function fetchPostById(id: string, signal?: AbortSignal): Promise<A
  */
 export async function createComment(postId: string, content: string): Promise<ApiResult<Comment>> {
   return apiPost(`/api/posts/${postId}/comments`, { content }, CommentSchema);
+}
+
+
+
+/**
+ * Zod Schema for created post response from backend
+ */
+export const CreatedPostSchema = z.object({
+  id: z.string(),
+  content: z.string(),
+  imageUrl: z.string().nullable().optional(),
+  authorId: z.string(),
+  createdAt: z.string().optional(),
+});
+
+export type CreatedPost = z.infer<typeof CreatedPostSchema>;
+
+/**
+ * Create a new post with content and optional image file
+ */
+export async function createPost(formData: FormData): Promise<ApiResult<CreatedPost>> {
+  return apiPostForm("/api/posts", formData, CreatedPostSchema);
 }
