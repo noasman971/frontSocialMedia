@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { apiGet, type ApiResult } from "../shared/api";
+import { apiGet, apiPost, type ApiResult } from "../shared/api";
 
 /**
  * Zod Schema for Author
@@ -69,4 +69,11 @@ export async function fetchPosts(signal?: AbortSignal): Promise<ApiResult<Post[]
  */
 export async function fetchPostById(id: string, signal?: AbortSignal): Promise<ApiResult<PostDetails>> {
   return apiGet(`/api/posts/${id}`, PostDetailsSchema, signal);
+}
+
+/**
+ * Create a comment for a post
+ */
+export async function createComment(postId: string, content: string): Promise<ApiResult<Comment>> {
+  return apiPost(`/api/posts/${postId}/comments`, { content }, CommentSchema);
 }

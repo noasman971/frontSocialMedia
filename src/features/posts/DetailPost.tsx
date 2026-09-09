@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import {useComment, useDetailsPosts} from "./usePosts";
+import { useDetailsPosts } from "./usePosts";
 import { formatDate } from "../shared/date";
 import type { z } from "zod";
-import type { CommentSchema } from "./posts.api";
+import { createComment, type CommentSchema } from "./posts.api";
 
 type Comment = z.infer<typeof CommentSchema>;
 
@@ -68,7 +68,7 @@ export default function DetailPost() {
             const handleAddComment = (e: FormEvent) => {
                 e.preventDefault();
                 const trimmed = newCommentText.trim();
-                if (!trimmed) return;
+                if (!trimmed || !id) return;
 
                 const optimisticComment: Comment = {
                     id: `temp-${Date.now()}`,
@@ -81,7 +81,8 @@ export default function DetailPost() {
                     },
                 };
 
-                useComment(optimisticComment)
+                // send comment to backend
+                createComment(id, trimmed);
 
                 setLocalComments([...comments, optimisticComment]);
                 setNewCommentText("");
