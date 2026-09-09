@@ -26,6 +26,9 @@ jobs:
       - name: Installation des dépendances
         run: npm ci
 
+      - name: Vérification des types TypeScript
+        run: npx tsc --noEmit
+
       - name: Linting du code
         run: npm run lint
 
