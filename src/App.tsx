@@ -3,9 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PostList } from "./features/posts/PostList";
 import RegisterForm from "./features/Auth/register/RegisterForm";
 import LoginForm from "./features/Auth/login/LoginForm";
+import DetailPost from "./features/posts/DetailPost";
 
 // protect routes if user is not logged in
-
 // This is a Route, children will be ReactNode who are inside him (like "<HomePage />")
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem("token");
@@ -85,6 +85,16 @@ function App() {
           element={
             <ProtectedRoute>
               <HomePage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Single post details page (Story 5) */}
+        <Route
+          path="/posts/:id"
+          element={
+            <ProtectedRoute>
+              <DetailPost />
             </ProtectedRoute>
           }
         />

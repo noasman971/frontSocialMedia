@@ -3,6 +3,7 @@ import { PostCard } from "./PostCard";
 import { usePosts } from "./usePosts";
 
 export function PostList() {
+
   const { state, loadMore } = usePosts();     // our custom Hook
   // please explain me this...
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -71,12 +72,17 @@ export function PostList() {
         </div>
       );
 
+
     case "success":
       return (
         <div className="divide-y divide-border w-full">
           {/* Map foreach Post -> PostCard component with id as key */}
           {state.data.map((post) => (
-            <PostCard key={post.id} post={post} />
+              <>
+                  <PostCard key={post.id} post={post} />
+
+              </>
+
           ))}
 
           {/* Invisible flag for lazy load */}
@@ -87,6 +93,7 @@ export function PostList() {
               aria-hidden="true"
             />
           )}
+
         </div>
       );
 

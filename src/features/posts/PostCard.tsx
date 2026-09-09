@@ -1,43 +1,18 @@
+import {Link, useNavigate} from "react-router-dom";
 import type { Post } from "./posts.api";
+import { formatDate } from "../shared/date";
 
 type PostCardProps = {
   // we ensure that the post card contain a Post (id, content, author, img, etc...)
   post: Post;
 };
 
-/**
- * AI sry
- * Formats an ISO date string into a shorter date format
- * @param dateStr ISO date string from database
- */
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return "";
-
-  const now = new Date();
-  const diffInSeconds = (now.getTime() - date.getTime()) / 1000;
-
-    if(diffInSeconds < 60) {
-        return "À l'instant";
-    }else if (diffInSeconds < 3600) {
-        const minutes = Math.floor(diffInSeconds / 60);
-        return minutes + " minute" + (minutes > 1 ? "s" : "");
-    }else if (diffInSeconds < 86400) {
-        const hours = Math.floor(diffInSeconds / 3600);
-        return hours + " heure" + (hours > 1 ? "s" : "");
-    }else if (diffInSeconds < 604800) {
-        const days = Math.floor(diffInSeconds / 86400);
-        return days + " jour" + (days > 1 ? "s" : "");
-    }else if (diffInSeconds < 2419200) {
-        const weeks = Math.floor(diffInSeconds / 604800);
-        return weeks + " semaine" + (weeks > 1 ? "s" : "");
-    }
-
-    // For dates older than 4 weeks, we return the date in a short format (e.g., "12 janv.")
-    return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
-}
-
 export function PostCard({ post }: PostCardProps) {
+  const navigate = useNavigate();
+  const gotoDetail = (id: string) => {
+    navigate(`/posts/${id}`);
+  };
+
   // Ensure unsername is not null
   const username = post.author?.username ?? "Utilisateur inconnu";
   // create avatar from first letters of the username, uppercase them (because in db they are lowercase)
@@ -63,23 +38,21 @@ export function PostCard({ post }: PostCardProps) {
             </span>
           </div>
         </div>
-        <button
-          className="text-text-secondary hover:text-text-primary text-sm p-1"
-        >
-          •••
+        <button className="text-text-secondary hover:text-text-primary text-sm p-1" onClick={() => gotoDetail(post.id)}>
+          Voir les détails
         </button>
       </div>
 
-      {/* Optional Post Image */}
+      {/* Optional Post Image - Clickable to open details */}
       {post.imageUrl && (
-        <div className="rounded-lg overflow-hidden border border-border bg-elevated">
+        <Link to={`/posts/${post.id}`} className="block rounded-lg overflow-hidden border border-border bg-elevated">
           <img
             src={post.imageUrl}
             alt={`Publication de ${username}`}
             loading="lazy"
-            className="w-full max-h-[500px] object-cover"
+            className="w-full max-h-[500px] object-cover hover:opacity-95 transition"
           />
-        </div>
+        </Link>
       )}
 
       {/* Likes & Comments */}
@@ -88,10 +61,10 @@ export function PostCard({ post }: PostCardProps) {
           <span className="font-semibold text-text-primary">{post.likeCount}</span>
           <span>{post.likeCount > 1 ? "J'aimes" : "J'aime"}</span>
         </div>
-        <div className="flex items-center space-x-1">
+        <Link to={`/posts/${post.id}`} className="flex items-center space-x-1 hover:text-text-primary cursor-pointer">
           <span className="font-semibold text-text-primary">{post.commentCount}</span>
           <span>{post.commentCount > 1 ? "commentaires" : "commentaire"}</span>
-        </div>
+        </Link>
       </div>
 
       {/* Post Content */}
