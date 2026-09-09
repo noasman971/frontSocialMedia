@@ -78,11 +78,7 @@ export function PostList() {
         <div className="divide-y divide-border w-full">
           {/* Map foreach Post -> PostCard component with id as key */}
           {state.data.map((post) => (
-              <>
-                  <PostCard key={post.id} post={post} />
-
-              </>
-
+            <PostCard key={post.id} post={post} />
           ))}
 
           {/* Invisible flag for lazy load */}

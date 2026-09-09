@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { PostList } from "./features/posts/PostList";
+import CreatePostForm from "./features/posts/CreatePostForm";
 
-// 1. Le sous-composant Header (tu peux le mettre dans un fichier à part si tu veux)
+// Header Component
 function Header() {
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -27,20 +29,36 @@ function Header() {
     );
 }
 
-// 2. Ta HomePage allégée
+//Main HomePage with CreatePostForm and Feed
 export default function HomePage() {
+    // Key to trigger feed re-render on new post
+    const [feedKey, setFeedKey] = useState(0);
+
+    const handlePostCreated = () => {
+        // Increment key to reset and reload PostList
+        // A post has been created, so we increment the key
+        // So we force a re-render of the PostList component
+        // TODO: Il faudra qu'on evite de tout rerender tout a chaque fois
+        // et plutôt injecter le nouveau post directement dans le feed.
+        // de la meme maniere qu'il faudra stoquer le scrollage actuel dans le feed, 
+        // et eviter de toujours tout fetch dès qu'on arrive sur la home page.
+        setFeedKey((prev) => prev + 1);
+    };
+
     return (
         <div className="min-h-screen bg-bg text-text-primary flex justify-center">
-            <main className="w-full max-w-200 pt-8 px-4 flex flex-col">
+            <main className="w-full max-w-[800px] pt-8 px-4 flex flex-col">
 
                 <Header />
 
-                <section className="py-4 border-b border-border">
-                    <div className="text-xs text-text-secondary"></div>
+                {/* Create post form */}
+                <section className="pt-6">
+                    <CreatePostForm onPostCreated={handlePostCreated} />
                 </section>
 
-                <section className="pt-4">
-                    <PostList />
+                {/* Feed posts */}
+                <section className="pt-2">
+                    <PostList key={feedKey} />
                 </section>
 
             </main>

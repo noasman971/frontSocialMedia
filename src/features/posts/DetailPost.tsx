@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import {useComment, useDetailsPosts} from "./usePosts";
+import { useDetailsPosts } from "./usePosts";
 import { formatDate } from "../shared/date";
 import type { z } from "zod";
-import type { CommentSchema } from "./posts.api";
+import { createComment, type CommentSchema } from "./posts.api";
 
 type Comment = z.infer<typeof CommentSchema>;
 
@@ -12,7 +12,7 @@ export default function DetailPost() {
     const navigate = useNavigate();
     const state = useDetailsPosts(id);
 
-    // État local pour gérer l'input et la liste des commentaires côté front
+    // local state for input and comments list in front
     const [newCommentText, setNewCommentText] = useState("");
     const [localComments, setLocalComments] = useState<Comment[] | null>(null);
 
@@ -68,7 +68,7 @@ export default function DetailPost() {
             const handleAddComment = (e: FormEvent) => {
                 e.preventDefault();
                 const trimmed = newCommentText.trim();
-                if (!trimmed) return;
+                if (!trimmed || !id) return;
 
                 const optimisticComment: Comment = {
                     id: `temp-${Date.now()}`,
@@ -81,7 +81,8 @@ export default function DetailPost() {
                     },
                 };
 
-                useComment(optimisticComment)
+                // send comment to backend
+                createComment(id, trimmed);
 
                 setLocalComments([...comments, optimisticComment]);
                 setNewCommentText("");
@@ -134,16 +135,18 @@ export default function DetailPost() {
                             </div>
                         )}
 
+                        {/* Contenu textuel (seulement s'il n'est pas vide) */}
+                        {post.content && post.content.trim() !== "" && (
+                            <div className="text-sm text-text-primary leading-relaxed whitespace-pre-line">
+                                <span className="font-semibold text-xs mr-2">{authorName}</span>
+                                {post.content}
+                            </div>
+                        )}
+
                         {/* Likes */}
                         <div className="flex items-center space-x-1 text-xs text-text-secondary pt-1">
                             <span className="font-semibold text-text-primary">{post.likeCount}</span>
                             <span>{post.likeCount > 1 ? "J'aimes" : "J'aime"}</span>
-                        </div>
-
-                        {/* Contenu textuel */}
-                        <div className="text-sm text-text-primary leading-relaxed whitespace-pre-line">
-                            <span className="font-semibold text-xs mr-2">{authorName}</span>
-                            {post.content}
                         </div>
                     </article>
 

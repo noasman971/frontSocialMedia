@@ -1,28 +1,27 @@
 import { type Post, type PostDetails, fetchPosts, fetchPostById } from "./posts.api";
 import { useEffect, useState, useCallback } from "react";
-import {apiPost, type ApiResult} from "../shared/api.ts";
-import { z } from "zod";
 
 // the number of post to charge
 const PAGE_SIZE = 10;
 
-// TODO: j'ai du faire un deuxieme type State pour useDetailPosts
+// (TODO): j'ai du faire un deuxieme type State pour useDetailPosts
 //comment j'unifie tout ça ? pour mon lazyloading j'en ai besoin
+// SOLUTION: Un state base, et 2 state qui l'herite et complete, classique
 
 type StateBase =
-    | { status: "loading" }
-    | { status: "error"; message: string }
-    | { status: "empty" };
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "empty" };
 
 // if sucess, we also need 2 flag for the lazy loading
 export type State<T> =
-    | StateBase
-    | {
-  status: "success";
-  data: T;
-  hasMore: boolean;
-  isLoadingMore: boolean;
-};
+  | StateBase
+  | {
+    status: "success";
+    data: T;
+    hasMore: boolean;
+    isLoadingMore: boolean;
+  };
 
 
 
@@ -94,20 +93,20 @@ export type SimpleState<T> =
   | { status: "success"; data: T };
 
 export function useDetailsPosts(id: string | undefined): SimpleState<PostDetails> {
-  const [state, setState] = useState<SimpleState<PostDetails>>({
-    status: "loading",
+  const [state, setState] = useState<SimpleState<PostDetails>>(() => {
+    if (!id) {
+      return { status: "error", message: "ou est l'dentifiant du post ?" };
+    }
+    return { status: "loading" };
   });
 
   useEffect(() => {
-    // If no ID in url, there is something wrong
+    // If no ID in url, already handled in initial state
     if (!id) {
-      setState({ status: "error", message: "ou est l'dentifiant du post ?" });
       return;
     }
 
     const controller = new AbortController();
-
-    setState({ status: "loading" });
 
     // Call real backend route with shared api and Zod safeParse
     fetchPostById(id, controller.signal).then((res) => {
@@ -128,52 +127,4 @@ export function useDetailsPosts(id: string | undefined): SimpleState<PostDetails
   }, [id]);
 
   return state;
-}
-
-export interface CommentPayload {
-  id: string;
-  content: string;
-  createdAt: string;
-  author?: {
-    id: string;
-    username: string;
-    email?: string | undefined;
-    avatarUrl?: string | null | undefined;
-  } | null | undefined;
-}
-
-export const CommentResponseSchema = z.object({
-  token: z.string().optional(),
-  comment: z
-      .object({
-        content: z.string(),
-        id: z.string(),
-        authorId: z.string(),
-      })
-      .optional(),
-  error: z.string().optional(),
-});
-
-export type CommentResponse = z.infer<typeof CommentResponseSchema>;
-
-export async function useComment(data: CommentPayload): Promise<ApiResult<CommentResponse>> {
-
-  const res = await apiPost<CommentResponse, CommentPayload>(
-      "/api/posts/:id/comments",
-      data,
-      CommentResponseSchema
-  );
-
-  if (res.ok) {
-    // If backend returns error (like email already used)
-    if (res.data.error) {
-      return { ok: false, error: res.data.error };
-    }
-    // save JWT token in localStorage
-    if (res.data.token) {
-      localStorage.setItem("token", res.data.token);
-    }
-  }
-
-  return res;
 }
