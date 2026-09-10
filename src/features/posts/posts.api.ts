@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { apiGet, type ApiResult } from "../shared/api";
+import { apiDelete, apiGet, type ApiResult } from "../shared/api";
 
 /**
  * Zod Schema for Author
@@ -52,6 +52,10 @@ export const PostDetailsSchema = z.object({
  */
 export const PostsListSchema = z.array(PostSchema);
 
+export const DeleteResponseSchema = z.object({
+  success: z.boolean(),
+});
+
 // TypeScript types inferred from Zod schemas
 export type Post = z.infer<typeof PostSchema>;
 export type PostDetails = z.infer<typeof PostDetailsSchema>;
@@ -69,4 +73,22 @@ export async function fetchPosts(signal?: AbortSignal): Promise<ApiResult<Post[]
  */
 export async function fetchPostById(id: string, signal?: AbortSignal): Promise<ApiResult<PostDetails>> {
   return apiGet(`/api/posts/${id}`, PostDetailsSchema, signal);
+}
+
+export async function deletePost(
+    id: string
+): Promise<ApiResult<{ success: boolean }>> {
+  return apiDelete(
+      `/api/posts/${id}`,
+      DeleteResponseSchema
+  );
+}
+
+export async function deleteComment(
+    id: string
+): Promise<ApiResult<{ success: boolean }>> {
+  return apiDelete(
+      `/api/comments/${id}`,
+      DeleteResponseSchema
+  );
 }
