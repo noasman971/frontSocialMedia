@@ -1,9 +1,7 @@
 import { z } from "zod";
 import { apiGet, type ApiResult } from "../../shared/api";
 
-// --------------------------------------------------
-// USER PROFILE
-// --------------------------------------------------
+
 
 export const UserProfileSchema = z.object({
     id: z.string(),
@@ -13,9 +11,7 @@ export const UserProfileSchema = z.object({
 
 export type UserProfile = z.infer<typeof UserProfileSchema>;
 
-// --------------------------------------------------
-// POST
-// --------------------------------------------------
+
 
 export const PostSchema = z.object({
     id: z.string(),
@@ -40,9 +36,7 @@ export const PostSchema = z.object({
 
 export type Post = z.infer<typeof PostSchema>;
 
-// --------------------------------------------------
-// API : PROFIL
-// --------------------------------------------------
+
 
 export async function fetchUserProfile(
     id: string
@@ -59,9 +53,6 @@ export async function fetchUserProfile(
     return res;
 }
 
-// --------------------------------------------------
-// API : POSTS
-// --------------------------------------------------
 
 export async function fetchUserPosts(
     id: string

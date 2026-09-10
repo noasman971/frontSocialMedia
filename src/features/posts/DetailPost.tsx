@@ -14,7 +14,6 @@ export default function DetailPost() {
     const navigate = useNavigate();
     const state = useDetailsPosts(id);
 
-    // État local pour gérer l'input et la liste des commentaires côté front
     const [newCommentText, setNewCommentText] = useState("");
     const [localComments, setLocalComments] = useState<Comment[] | null>(null);
 

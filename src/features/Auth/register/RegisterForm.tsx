@@ -35,7 +35,7 @@ function RegisterForm() {
       }
     }
 
-    // NOM D'UTILISATEUR
+    // username
     if (!username.trim()) {
       newErrors.username = "Le nom d'utilisateur est obligatoire.";
     } else if (username.trim().length < 3) {
@@ -46,7 +46,7 @@ function RegisterForm() {
         "Le nom d'utilisateur ne peut pas dépasser 30 caractères.";
     }
 
-    // MOT DE PASSE
+    // password
     if (!password) {
       newErrors.password = "Le mot de passe est obligatoire.";
     } else if (password.length < 8) {

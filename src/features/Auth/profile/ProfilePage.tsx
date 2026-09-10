@@ -8,9 +8,7 @@ import {
 } from "./profile.api";
 import {getCurrentUserId} from "../../shared/api.ts";
 
-// --------------------------------------------------
-// ERREUR
-// --------------------------------------------------
+
 
 export function ProfileError() {
     return (
@@ -27,9 +25,7 @@ export function ProfileError() {
     );
 }
 
-// --------------------------------------------------
-// HEADER PROFIL
-// --------------------------------------------------
+
 
 interface ProfileHeaderProps {
     user: UserProfile;
@@ -85,9 +81,6 @@ export function ProfileHeader({
     );
 }
 
-// --------------------------------------------------
-// PUBLICATIONS
-// --------------------------------------------------
 
 export function UserPosts({
     userId,
@@ -184,9 +177,7 @@ export function UserPosts({
     );
 }
 
-// --------------------------------------------------
-// PAGE
-// --------------------------------------------------
+
 
 export default function ProfilePage() {
     const { id } = useParams<{ id: string }>();
@@ -240,7 +231,6 @@ export default function ProfilePage() {
 
                 setUser(profileRes.data);
 
-                // Charger les publications
                 const postsRes = await fetchUserPosts(id);
 
                 console.log(
