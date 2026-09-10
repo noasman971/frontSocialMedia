@@ -31,6 +31,12 @@ function Header() {
 
 //Main HomePage with CreatePostForm and Feed
 export default function HomePage() {
+
+
+    // j'utilise un UseState simplement comme trigger, 
+    // ce qui fait qu'en sois on stock feedKey mais pour aucune raison
+    // on aurait pu utiliser un simple useCallback ? mais comment sans ia
+
     // Key to trigger feed re-render on new post
     const [feedKey, setFeedKey] = useState(0);
 

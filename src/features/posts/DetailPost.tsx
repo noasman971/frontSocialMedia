@@ -4,6 +4,7 @@ import { useDetailsPosts } from "./usePosts";
 import { formatDate } from "../shared/date";
 import type { z } from "zod";
 import { createComment, type CommentSchema } from "./posts.api";
+import { LikeButton } from "./LikeButton";
 
 type Comment = z.infer<typeof CommentSchema>;
 
@@ -144,9 +145,11 @@ export default function DetailPost() {
                         )}
 
                         {/* Likes */}
-                        <div className="flex items-center space-x-1 text-xs text-text-secondary pt-1">
-                            <span className="font-semibold text-text-primary">{post.likeCount}</span>
-                            <span>{post.likeCount > 1 ? "J'aimes" : "J'aime"}</span>
+                        <div className="pt-1">
+                            <LikeButton
+                                postId={post.id}
+                                initialLikeCount={post.likeCount}
+                            />
                         </div>
                     </article>
 

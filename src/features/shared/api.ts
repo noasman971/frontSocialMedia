@@ -155,3 +155,46 @@ export async function apiPostForm<T>(url: string, formData: FormData, schema: z.
     return { ok: false, error: "Erreur inconnue" };
   }
 }
+
+/**
+ * Generic Delete Helper with Zod and Auth header
+ * @param url URL of the API endpoint
+ * @param schema Zod schema to validate the data
+ * @param signal AbortSignal to cancel the request if needed
+ */
+export async function apiDelete<T>(url: string, schema: z.ZodType<T>, signal?: AbortSignal): Promise<ApiResult<T>> {
+  try {
+    const res = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        ...getAuthHeaders(),
+      },
+      signal,
+    });
+
+    if (!res.ok) {
+      return { ok: false, error: `Erreur HTTP ${res.status}` };
+    }
+
+    const data: unknown = await res.json();
+
+    const parsed = schema.safeParse(data);
+    if (!parsed.success) {
+      return {
+        ok: false,
+        error: `Zod error: ${parsed.error.message}`,
+      };
+    }
+
+    return { ok: true, data: parsed.data };
+  } catch (e: unknown) {
+    if (e instanceof Error) {
+      if (e.name === "AbortError") {
+        return { ok: false, error: "Aborted", isAborted: true };
+      }
+      return { ok: false, error: e.message };
+    }
+    return { ok: false, error: "Erreur inconnue" };
+  }
+}
+
