@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import {
   FiHome,
@@ -13,7 +12,6 @@ import { PostList } from "./features/posts/PostList";
 import { getCurrentUserId } from "./features/shared/api";
 
 import { useState } from "react";
-import { PostList } from "./features/posts/PostList";
 import CreatePostForm from "./features/posts/CreatePostForm";
 
 // Header Component
@@ -79,7 +77,6 @@ export function LeftSidebar() {
 
   return (
     <div className="hidden md:flex flex-col w-[244px] h-screen sticky top-0 pt-8 pb-4 px-3 border-r border-border">
-      
       {/* Logo */}
       <div className="px-3 mb-8 cursor-pointer">
         <span className="text-xl font-bold italic">
@@ -110,7 +107,6 @@ export function LeftSidebar() {
 
       {/* Menu inférieur */}
       <div className="flex flex-col gap-2 mt-auto">
-        
         {/* Autres applications */}
         <button
           className="flex items-center gap-4 p-3 rounded-lg hover:bg-elevated transition cursor-pointer"
@@ -136,59 +132,35 @@ export function LeftSidebar() {
     </div>
   );
 }
-//Main HomePage with CreatePostForm and Feed
+
+// Main HomePage with CreatePostForm and Feed
 export default function HomePage() {
-  
+  const [feedKey, setFeedKey] = useState(0);
 
+  const handlePostCreated = () => {
+    setFeedKey((prev) => prev + 1);
+  };
 
-
-
-    // j'utilise un UseState simplement comme trigger, 
-    // ce qui fait qu'en sois on stock feedKey mais pour aucune raison
-    // on aurait pu utiliser un simple useCallback ? mais comment sans ia
-
-    // Key to trigger feed re-render on new post
-    const [feedKey, setFeedKey] = useState(0);
-
-    const handlePostCreated = () => {
-        // Increment key to reset and reload PostList
-        // A post has been created, so we increment the key
-        // So we force a re-render of the PostList component
-        // TODO: Il faudra qu'on evite de tout rerender tout a chaque fois
-        // et plutôt injecter le nouveau post directement dans le feed.
-        // de la meme maniere qu'il faudra stoquer le scrollage actuel dans le feed, 
-        // et eviter de toujours tout fetch dès qu'on arrive sur la home page.
-        setFeedKey((prev) => prev + 1);
-    };
-
-return (
+  return (
     <div className="min-h-screen bg-bg text-text-primary flex justify-between w-full">
-      
       {/* Sidebar */}
       <LeftSidebar />
-        <div className="min-h-screen bg-bg text-text-primary flex justify-center">
-            <main className="w-full max-w-[800px] pt-8 px-4 flex flex-col">
 
       {/* Contenu principal */}
-      <main className="w-full max-w-157.5 pt-8 px-4 flex flex-col mx-auto">
-        
+      <main className="w-full max-w-[800px] pt-8 px-4 flex flex-col mx-auto">
         {/* Header */}
         <Header />
 
+        {/* Create post form */}
+        <section className="pt-6">
+          <CreatePostForm onPostCreated={handlePostCreated} />
+        </section>
 
-
- 
-                {/* Create post form */}
-                <section className="pt-6">
-                    <CreatePostForm onPostCreated={handlePostCreated} />
-                </section>
-
-                {/* Feed posts */}
-                <section className="pt-2">
-                    <PostList key={feedKey} />
-                </section>
-
-            </main>
-        </div>
-    );
+        {/* Feed posts */}
+        <section className="pt-2">
+          <PostList key={feedKey} />
+        </section>
+      </main>
+    </div>
+  );
 }
