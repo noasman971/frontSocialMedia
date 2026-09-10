@@ -3,6 +3,7 @@ import RegisterForm from "./features/Auth/register/RegisterForm";
 import LoginForm from "./features/Auth/login/LoginForm";
 import DetailPost from "./features/posts/DetailPost";
 import HomePage from "./HomePage.tsx";
+import ProfilePage from "./features/Auth/profile/ProfilePage.tsx";
 
 // Noasman971 a retiré tout mes fucking commentaires wlh
 // -2 point pour nono
@@ -21,16 +22,16 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-        <Route path="/posts/:id" element={<ProtectedRoute><DetailPost /></ProtectedRoute>} />
-        <Route path="/register" element={<PublicOnlyRoute><RegisterForm /></PublicOnlyRoute>} />
-        <Route path="/login" element={<PublicOnlyRoute><LoginForm /></PublicOnlyRoute>} />
-        <Route path="/profile" element={<PublicOnlyRoute><LoginForm /></PublicOnlyRoute>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+          <Route path="/posts/:id" element={<ProtectedRoute><DetailPost /></ProtectedRoute>} />
+          <Route path="/register" element={<PublicOnlyRoute><RegisterForm /></PublicOnlyRoute>} />
+          <Route path="/login" element={<PublicOnlyRoute><LoginForm /></PublicOnlyRoute>} />
+          <Route path="/profile/:id" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
   );
 }
 

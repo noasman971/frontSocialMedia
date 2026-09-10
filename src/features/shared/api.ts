@@ -4,8 +4,8 @@ import { z } from "zod";
  * Api Generic Response
  */
 export type ApiResult<T> =
-  | { ok: true; data: T }
-  | { ok: false; error: string; isAborted?: boolean };
+    | { ok: true; data: T }
+    | { ok: false; error: string; isAborted?: boolean };
 
 // get token from localStorage if exist
 function getAuthHeaders(): HeadersInit {
@@ -15,6 +15,30 @@ function getAuthHeaders(): HeadersInit {
     headers["Authorization"] = `Bearer ${token}`;
   }
   return headers;
+}
+
+export function getCurrentUserId(): string | null {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return null;
+  }
+
+  try {
+    const payload = token.split(".")[1];
+
+    if (!payload) {
+      return null;
+    }
+
+    const decoded = JSON.parse(atob(payload));
+
+    return typeof decoded.userId === "string"
+        ? decoded.userId
+        : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -120,7 +144,6 @@ export async function apiPost<T, B>(url: string, body: B, schema: z.ZodType<T>, 
  */
 export async function apiPostForm<T>(url: string, formData: FormData, schema: z.ZodType<T>, signal?: AbortSignal): Promise<ApiResult<T>> {
   try {
-    // Exactement la meme chose que les autre, sauf que la on rajoute un formData quoi.
     const res = await fetch(url, {
       method: "POST",
       headers: {
@@ -139,13 +162,12 @@ export async function apiPostForm<T>(url: string, formData: FormData, schema: z.
     if (!parsed.success) {
       return {
         ok: false,
-        error: `Zod error: ${parsed.error.message}`,
+        error: `Zod thinks there's something wrong with the API response: ${parsed.error.message}`,
       };
     }
 
     return { ok: true, data: parsed.data };
-  }
-  catch (e: unknown) {
+  } catch (e: unknown) {
     if (e instanceof Error) {
       if (e.name === "AbortError") {
         return { ok: false, error: "Aborted", isAborted: true };
@@ -182,7 +204,7 @@ export async function apiDelete<T>(url: string, schema: z.ZodType<T>, signal?: A
     if (!parsed.success) {
       return {
         ok: false,
-        error: `Zod error: ${parsed.error.message}`,
+        error: `Zod thinks there's something wrong with the API response: ${parsed.error.message}`,
       };
     }
 
@@ -197,4 +219,3 @@ export async function apiDelete<T>(url: string, schema: z.ZodType<T>, signal?: A
     return { ok: false, error: "Erreur inconnue" };
   }
 }
-

@@ -52,8 +52,11 @@ export const PostDetailsSchema = z.object({
  */
 export const PostsListSchema = z.array(PostSchema);
 
+export const DeleteResponseSchema = z.object({
+  success: z.boolean(),
+});
+
 // TypeScript types inferred from Zod schemas
-// Qui connaissait le mot Inférence sérieux
 export type Post = z.infer<typeof PostSchema>;
 export type PostDetails = z.infer<typeof PostDetailsSchema>;
 export type Comment = z.infer<typeof CommentSchema>;
@@ -72,14 +75,30 @@ export async function fetchPostById(id: string, signal?: AbortSignal): Promise<A
   return apiGet(`/api/posts/${id}`, PostDetailsSchema, signal);
 }
 
+export async function deletePost(
+    id: string
+): Promise<ApiResult<{ success: boolean }>> {
+  return apiDelete(
+      `/api/posts/${id}`,
+      DeleteResponseSchema
+  );
+}
+
+export async function deleteComment(
+    id: string
+): Promise<ApiResult<{ success: boolean }>> {
+  return apiDelete(
+      `/api/comments/${id}`,
+      DeleteResponseSchema
+  );
+}
+
 /**
  * Create a comment for a post
  */
 export async function createComment(postId: string, content: string): Promise<ApiResult<Comment>> {
   return apiPost(`/api/posts/${postId}/comments`, { content }, CommentSchema);
 }
-
-
 
 /**
  * Zod Schema for created post response from backend

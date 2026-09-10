@@ -1,4 +1,10 @@
-import { type Post, type PostDetails, fetchPosts, fetchPostById } from "./posts.api";
+import {
+  type Post,
+  type PostDetails,
+  fetchPosts,
+  fetchPostById,
+  deletePost,
+} from "./posts.api";
 import { useEffect, useState, useCallback } from "react";
 
 // the number of post to charge
@@ -83,14 +89,53 @@ export function usePosts() {
     });
   }, [state, allPosts, visibleCount]);
 
-  return { state, loadMore };
+  const removePost = useCallback(async (id: string) => {
+    const result = await deletePost(id);
+
+    if (!result.ok) {
+      return result;
+    }
+
+    setAllPosts((currentPosts) =>
+        currentPosts.filter((post) => post.id !== id)
+    );
+
+    setState((currentState) => {
+      if (currentState.status !== "success") {
+        return currentState;
+      }
+
+      const newData = currentState.data.filter(
+          (post) => post.id !== id
+      );
+
+      if (newData.length === 0) {
+        return { status: "empty" };
+      }
+
+      return {
+        status: "success",
+        data: newData,
+        hasMore: newData.length < allPosts.length - 1,
+        isLoadingMore: false,
+      };
+    });
+
+    setVisibleCount((current) =>
+        Math.max(0, current - 1)
+    );
+
+    return result;
+  }, [allPosts.length]);
+
+  return { state, loadMore, removePost };
 }
 
 // Hook for fetching a single post by id with real backend and Zod validation
 // Before it was using /posts${id}.json without shared api, now it uses fetchPostById with AbortController
 export type SimpleState<T> =
-  | StateBase
-  | { status: "success"; data: T };
+    | StateBase
+    | { status: "success"; data: T };
 
 export function useDetailsPosts(id: string | undefined): SimpleState<PostDetails> {
   const [state, setState] = useState<SimpleState<PostDetails>>(() => {
