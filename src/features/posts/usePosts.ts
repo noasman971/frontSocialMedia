@@ -158,22 +158,16 @@ export const CommentResponseSchema = z.object({
 
 export type CommentResponse = z.infer<typeof CommentResponseSchema>;
 
-export async function useComment(data: CommentPayload): Promise<ApiResult<CommentResponse>> {
-
-  const res = await apiPost<CommentResponse, CommentPayload>(
-      "/api/posts/:id/comments",
+export async function postComment(postId: string, data: { content: string }): Promise<ApiResult<CommentResponse>> {
+  const res = await apiPost<CommentResponse, { content: string }>(
+      `/api/posts/${postId}/comments`,
       data,
       CommentResponseSchema
   );
 
   if (res.ok) {
-    // If backend returns error (like email already used)
     if (res.data.error) {
       return { ok: false, error: res.data.error };
-    }
-    // save JWT token in localStorage
-    if (res.data.token) {
-      localStorage.setItem("token", res.data.token);
     }
   }
 
