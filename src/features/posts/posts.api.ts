@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { apiDelete, apiGet, type ApiResult } from "../shared/api";
+import { apiGet, apiPost, apiPostForm, apiDelete, type ApiResult } from "../shared/api";
 
 /**
  * Zod Schema for Author
@@ -91,4 +91,58 @@ export async function deleteComment(
       `/api/comments/${id}`,
       DeleteResponseSchema
   );
+}
+
+/**
+ * Create a comment for a post
+ */
+export async function createComment(postId: string, content: string): Promise<ApiResult<Comment>> {
+  return apiPost(`/api/posts/${postId}/comments`, { content }, CommentSchema);
+}
+
+/**
+ * Zod Schema for created post response from backend
+ */
+export const CreatedPostSchema = z.object({
+  id: z.string(),
+  content: z.string(),
+  imageUrl: z.string().nullable().optional(),
+  authorId: z.string(),
+  createdAt: z.string().optional(),
+});
+
+export type CreatedPost = z.infer<typeof CreatedPostSchema>;
+
+/**
+ * Create a new post with content and optional image file
+ */
+export async function createPost(formData: FormData): Promise<ApiResult<CreatedPost>> {
+  return apiPostForm("/api/posts", formData, CreatedPostSchema);
+}
+
+/**
+ * Like response schema from backend
+ */
+export const LikeResponseSchema = z.object({
+  id: z.string().optional(),
+  postId: z.string().optional(),
+  userId: z.string().optional(),
+  error: z.string().optional(),
+  success: z.boolean().optional(),
+});
+
+export type LikeResponse = z.infer<typeof LikeResponseSchema>;
+
+/**
+ * Send like to backend
+ */
+export async function likePost(postId: string): Promise<ApiResult<LikeResponse>> {
+  return apiPost(`/api/posts/${postId}/like`, {}, LikeResponseSchema);
+}
+
+/**
+ * Send unlike to backend
+ */
+export async function unlikePost(postId: string): Promise<ApiResult<LikeResponse>> {
+  return apiDelete(`/api/posts/${postId}/like`, LikeResponseSchema);
 }

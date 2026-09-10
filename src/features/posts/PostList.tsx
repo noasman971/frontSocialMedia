@@ -3,32 +3,25 @@ import { PostCard } from "./PostCard";
 import { usePosts } from "./usePosts";
 
 export function PostList() {
-
-  const { state, loadMore, removePost } = usePosts();     // our custom Hook
-  // please explain me this...
+  const { state, loadMore, removePost } = usePosts();
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const hasMore = state.status === "success" ? state.hasMore : false;
-  // https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/rootMargin
-  // https://developer.mozilla.org/fr/docs/Web/API/Intersection_Observer_API
 
-  // IntersectionObserver detect the end of the page
   useEffect(() => {
-    // Dont observe if not in success mode or if we don't reach the ref
     if (state.status !== "success" || !sentinelRef.current) return;
 
-    // 300px (rootMargin) of anticipation
     const observer = new IntersectionObserver(
-        (entries) => {
-          const entry = entries[0];
+      (entries) => {
+        const entry = entries[0];
 
-          if (entry.isIntersecting && hasMore) {
-            loadMore();
-          }
-        },
-        {
-          rootMargin: "300px", // Invisible marge
+        if (entry.isIntersecting && hasMore) {
+          loadMore();
         }
+      },
+      {
+        rootMargin: "300px",
+      }
     );
 
     const currentSentinel = sentinelRef.current;
@@ -39,66 +32,57 @@ export function PostList() {
     };
   }, [state.status, hasMore, loadMore]);
 
-
   switch (state.status) {
     case "loading":
       return (
-          <div className="flex flex-col items-center justify-center p-8 space-y-3">
-            <div className="w-8 h-8 border-2 border-border border-t-btn-primary rounded-full animate-spin"></div>
-            <p className="text-xs text-text-secondary">Chargement des publications...</p>
-          </div>
+        <div className="flex flex-col items-center justify-center p-8 space-y-3">
+          <div className="w-8 h-8 border-2 border-border border-t-btn-primary rounded-full animate-spin"></div>
+          <p className="text-xs text-text-secondary">Chargement des publications...</p>
+        </div>
       );
 
     case "error":
       return (
-          <div
-              role="alert"
-              className="p-4 bg-elevated rounded-lg border border-border text-error text-center my-4"
-          >
-            <p className="font-semibold text-sm">Erreur</p>
-            <p className="text-xs text-text-secondary mt-1">{state.message}</p>
-          </div>
+        <div
+          role="alert"
+          className="p-4 bg-elevated rounded-lg border border-border text-error text-center my-4"
+        >
+          <p className="font-semibold text-sm">Erreur</p>
+          <p className="text-xs text-text-secondary mt-1">{state.message}</p>
+        </div>
       );
 
     case "empty":
       return (
-          <div className="text-center py-12 text-text-secondary">
-            <p className="font-semibold text-base text-text-primary">
-              Aucun post pour le moment
-            </p>
-            <p className="text-xs mt-1">
-              Partagez votre première photo ou suivez des personnes.
-            </p>
-          </div>
+        <div className="text-center py-12 text-text-secondary">
+          <p className="font-semibold text-base text-text-primary">
+            Aucun post pour le moment
+          </p>
+          <p className="text-xs mt-1">
+            Partagez votre première photo ou suivez des personnes.
+          </p>
+        </div>
       );
-
 
     case "success":
       return (
-          <div className="divide-y divide-border w-full">
-            {/* Map foreach Post -> PostCard component with id as key */}
-            {state.data.map((post) => (
-                <>
-                  <PostCard
-                      key={post.id}
-                      post={post}
-                      onDelete={removePost}
-                  />
+        <div className="divide-y divide-border w-full">
+          {state.data.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              onDelete={removePost}
+            />
+          ))}
 
-                </>
-
-            ))}
-
-            {/* Invisible flag for lazy load */}
-            {state.hasMore && (
-                <div
-                    ref={sentinelRef}
-                    className="h-1 w-full"
-                    aria-hidden="true"
-                />
-            )}
-
-          </div>
+          {state.hasMore && (
+            <div
+              ref={sentinelRef}
+              className="h-1 w-full"
+              aria-hidden="true"
+            />
+          )}
+        </div>
       );
 
     default: {
