@@ -11,7 +11,7 @@ interface FormErrors {
   general?: string;
 }
 
-type State<T> =
+type State =
   | { status: "loading" }
   | { status: "error"; message: string }
   | { status: "empty" }
