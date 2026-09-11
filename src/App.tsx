@@ -5,6 +5,9 @@ import DetailPost from "./features/posts/DetailPost";
 import HomePage from "./HomePage.tsx";
 import ProfilePage from "./features/Auth/profile/ProfilePage.tsx";
 
+// Noasman971 a retiré tout mes fucking commentaires wlh
+// -4 point pour nono
+
 
 // protect routes if user is not logged in
 // This is a Route, children will be ReactNode who are inside him (like "<HomePage />")

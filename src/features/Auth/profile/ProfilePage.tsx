@@ -8,8 +8,6 @@ import {
 } from "./profile.api";
 import { getCurrentUserId } from "../../shared/api.ts";
 
-
-
 export function ProfileError() {
     return (
         <div className="p-8 text-center flex flex-col items-center gap-4">
@@ -25,8 +23,6 @@ export function ProfileError() {
     );
 }
 
-
-
 interface ProfileHeaderProps {
     user: UserProfile;
     isOwner: boolean;
@@ -34,10 +30,10 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({
-                                  user,
-                                  isOwner,
-                                  postsCount,
-                              }: ProfileHeaderProps) {
+                                user,
+                                isOwner,
+                                postsCount,
+                            }: ProfileHeaderProps) {
     return (
         <header className="flex items-start gap-12 mb-12 px-8">
             {/* Avatar */}
@@ -51,9 +47,9 @@ export function ProfileHeader({
                     </span>
 
                     {isOwner ? (
-                        <button>Modifier profil</button>
+                        <button type="button">Modifier profil</button>
                     ) : (
-                        <button>Suivre</button>
+                        <button type="button">Suivre</button>
                     )}
                 </div>
 
@@ -81,17 +77,15 @@ export function ProfileHeader({
     );
 }
 
-
 type State<T> =
     | { status: "loading" }
     | { status: "error"; message: string }
     | { status: "empty" }
     | { status: "success"; data: T };
 
-
 export function UserPosts({
-                              posts,
-                          }: {
+                            posts,
+                        }: {
     posts: Post[];
 }) {
     if (posts.length === 0) {
@@ -125,7 +119,6 @@ export function UserPosts({
         </div>
     );
 }
-
 
 export default function ProfilePage() {
     const { id } = useParams<{ id: string }>();
@@ -227,6 +220,7 @@ export default function ProfilePage() {
             return (
                 <div className="w-full max-w-4xl mx-auto pt-8 px-4 text-white">
                     <button
+                        type="button"
                         onClick={() => navigate(-1)}
                         className="inline-flex items-center space-x-2 text-xs font-semibold text-text-secondary hover:text-text-primary transition"
                     >
