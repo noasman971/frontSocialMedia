@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useDetailsPosts} from "./usePosts";
+import { useDetailsPosts } from "./usePosts";
 import { formatDate } from "../shared/date";
+import { deleteComment, deletePost, createComment, type CommentSchema } from "./posts.api";
+import { getCurrentUserId } from "../shared/api";
 import type { z } from "zod";
-import { createComment, type CommentSchema } from "./posts.api";
 import { LikeButton } from "./LikeButton";
 
 type Comment = z.infer<typeof CommentSchema>;
@@ -13,7 +14,6 @@ export default function DetailPost() {
     const navigate = useNavigate();
     const state = useDetailsPosts(id);
 
-    // local state for input and comments list in front
     const [newCommentText, setNewCommentText] = useState("");
     const [localComments, setLocalComments] = useState<Comment[] | null>(null);
 
@@ -66,6 +66,53 @@ export default function DetailPost() {
 
             const comments = localComments ?? post.comments;
 
+            const currentUserId = getCurrentUserId();
+            const isPostAuthor = post.author?.id === currentUserId;
+
+            const handleDeletePost = async () => {
+                const confirmed = window.confirm(
+                    "Voulez-vous vraiment supprimer ce post ?"
+                );
+
+                if (!confirmed) {
+                    return;
+                }
+
+                const result = await deletePost(post.id);
+
+                if (!result.ok) {
+                    window.alert(
+                        result.error ?? "Impossible de supprimer le post."
+                    );
+                    return;
+                }
+
+                navigate("/");
+            };
+
+            const handleDeleteComment = async (commentId: string) => {
+                const confirmed = window.confirm(
+                    "Voulez-vous vraiment supprimer ce commentaire ?"
+                );
+
+                if (!confirmed) {
+                    return;
+                }
+
+                const result = await deleteComment(commentId);
+
+                if (!result.ok) {
+                    window.alert(
+                        result.error ?? "Impossible de supprimer le commentaire."
+                    );
+                    return;
+                }
+
+                setLocalComments(
+                    comments.filter((comment) => comment.id !== commentId)
+                );
+            };
+
             const handleAddComment = async (e: FormEvent) => {
                 e.preventDefault();
                 const trimmed = newCommentText.trim();
@@ -76,26 +123,27 @@ export default function DetailPost() {
                     content: trimmed,
                     createdAt: new Date().toISOString(),
                     author: {
-                        id: "current-user",
+                        id: currentUserId ?? "current-user",
                         username: "Moi",
                         avatarUrl: null,
                     },
                 };
 
-                const res = await createComment(id, trimmed);
-                if (!res.ok) {
-                    setLocalComments(comments);
-                    alert("Impossible d'ajouter le commentaire");
-                }
-
-                setLocalComments([optimisticComment, ...comments]);
+                const previousComments = comments;
+                setLocalComments([optimisticComment, ...previousComments]);
                 setNewCommentText("");
 
+                const res = await createComment(id, trimmed);
+                if (!res.ok) {
+                    setLocalComments(previousComments);
+                    alert("Impossible d'ajouter le commentaire");
+                } else {
+                    setLocalComments([res.data, ...previousComments]);
+                }
             };
 
             return (
                 <div className="max-w-2xl mx-auto py-6 px-4 space-y-6">
-                    {/* Bouton retour */}
                     <button
                         onClick={() => navigate(-1)}
                         className="inline-flex items-center space-x-2 text-xs font-semibold text-text-secondary hover:text-text-primary transition"
@@ -112,24 +160,33 @@ export default function DetailPost() {
                         <span>Retour</span>
                     </button>
 
-                    {/* Corps principal du post */}
                     <article className="space-y-4 pb-6 border-b border-border">
-                        {/* Header: Auteur & Date */}
-                        <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 rounded-full bg-story-gradient p-[2px] flex items-center justify-center shrink-0">
-                                <div className="w-full h-full rounded-full bg-bg border border-bg flex items-center justify-center text-xs font-semibold uppercase text-text-primary">
-                                    {authorInitials}
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-10 h-10 rounded-full bg-story-gradient p-[2px] flex items-center justify-center shrink-0">
+                                    <div className="w-full h-full rounded-full bg-bg border border-bg flex items-center justify-center text-xs font-semibold uppercase text-text-primary">
+                                        {authorInitials}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h1 className="font-semibold text-sm text-text-primary">{authorName}</h1>
+                                    <time className="text-[11px] text-text-tertiary block">
+                                        {formatDate(post.createdAt)}
+                                    </time>
                                 </div>
                             </div>
-                            <div>
-                                <h1 className="font-semibold text-sm text-text-primary">{authorName}</h1>
-                                <time className="text-[11px] text-text-tertiary block">
-                                    {formatDate(post.createdAt)}
-                                </time>
-                            </div>
+
+                            {isPostAuthor && (
+                                <button
+                                    type="button"
+                                    onClick={handleDeletePost}
+                                    className="text-red-500 hover:text-red-400 text-xs font-semibold p-1"
+                                >
+                                    Supprimer
+                                </button>
+                            )}
                         </div>
 
-                        {/* Image (optionnelle) */}
                         {post.imageUrl && (
                             <div className="rounded-lg overflow-hidden border border-border bg-elevated">
                                 <img
@@ -140,7 +197,6 @@ export default function DetailPost() {
                             </div>
                         )}
 
-                        {/* Contenu textuel (seulement s'il n'est pas vide) */}
                         {post.content && post.content.trim() !== "" && (
                             <div className="text-sm text-text-primary leading-relaxed whitespace-pre-line">
                                 <span className="font-semibold text-xs mr-2">{authorName}</span>
@@ -148,7 +204,6 @@ export default function DetailPost() {
                             </div>
                         )}
 
-                        {/* Likes */}
                         <div className="pt-1">
                             <LikeButton
                                 postId={post.id}
@@ -157,13 +212,11 @@ export default function DetailPost() {
                         </div>
                     </article>
 
-                    {/* Section Commentaires */}
                     <section className="space-y-4">
                         <h2 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
                             Commentaires ({comments.length})
                         </h2>
 
-                        {/* Formulaire d'ajout de commentaire */}
                         <form onSubmit={handleAddComment} className="flex items-center space-x-2">
                             <div className="w-8 h-8 rounded-full bg-elevated border border-border flex items-center justify-center text-[10px] font-semibold uppercase text-text-primary shrink-0">
                                 MO
@@ -195,22 +248,34 @@ export default function DetailPost() {
                                 {comments.map((comment) => {
                                     const commentAuthor = comment.author?.username ?? "Utilisateur inconnu";
                                     const commentInitials = commentAuthor.slice(0, 2).toUpperCase();
+                                    const isCommentAuthor = comment.author?.id === currentUserId;
 
                                     return (
                                         <div key={comment.id} className="py-3 flex items-start space-x-3">
-                                            {/* Avatar commentaire */}
                                             <div className="w-7 h-7 rounded-full bg-elevated border border-border flex items-center justify-center text-[10px] font-semibold uppercase text-text-primary shrink-0">
                                                 {commentInitials}
                                             </div>
 
-                                            {/* Contenu commentaire */}
                                             <div className="flex-1 text-xs leading-relaxed">
-                                                <div>
-                          <span className="font-semibold text-text-primary mr-2">
-                            {commentAuthor}
-                          </span>
-                                                    <span className="text-text-primary">{comment.content}</span>
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <div>
+                                                        <span className="font-semibold text-text-primary mr-2">
+                                                            {commentAuthor}
+                                                        </span>
+                                                        <span className="text-text-primary">{comment.content}</span>
+                                                    </div>
+
+                                                    {isCommentAuthor && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDeleteComment(comment.id)}
+                                                            className="text-red-500 hover:text-red-400 text-[10px] font-semibold shrink-0"
+                                                        >
+                                                            Supprimer
+                                                        </button>
+                                                    )}
                                                 </div>
+
                                                 <time className="text-[10px] text-text-tertiary block mt-1">
                                                     {formatDate(comment.createdAt)}
                                                 </time>
