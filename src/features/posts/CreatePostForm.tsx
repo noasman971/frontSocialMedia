@@ -18,7 +18,7 @@ import { createPost } from "./posts.api";
 
 interface CreatePostFormProps {
   // Callback called when post is successfully created
-  onPostCreated: () => void;
+  readonly onPostCreated: () => void;
 }
 
 export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {

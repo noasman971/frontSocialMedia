@@ -6,13 +6,14 @@ import HomePage from "./HomePage.tsx";
 import ProfilePage from "./features/Auth/profile/ProfilePage.tsx";
 import AppLayout from "./features/shared/AppLayout.tsx";
 
-// Noasman971 a retiré tout mes fucking commentaires wlh
-// -4 point pour nono
+type ProtectedRouteProps = {
+    readonly children: React.ReactNode;
+};
 
 
 // protect routes if user is not logged in
 // This is a Route, children will be ReactNode who are inside him (like "<HomePage />")
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
+function ProtectedRoute({ children }: ProtectedRouteProps ) {
   const token = localStorage.getItem("token");
   if (!token) return <Navigate to="/register" replace />;
   return <>{children}</>;

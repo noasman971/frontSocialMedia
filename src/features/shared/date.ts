@@ -4,7 +4,7 @@
  */
 export function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return "";
+  if (Number.isNaN(date.getTime())) return "";
 
   const now = new Date();
   const diffInSeconds = (now.getTime() - date.getTime()) / 1000;
