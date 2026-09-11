@@ -11,41 +11,35 @@ import { ProfileHeader, ProfileError } from "./ProfileHeader";
 import { ProfileTabs } from "./ProfileTabs";
 import { UserPosts } from "./UserPosts";
 
-// re-export components so imports from ProfilePage keep working
 export { ProfileHeader, ProfileError } from "./ProfileHeader";
 export { ProfileTabs } from "./ProfileTabs";
 export { UserPosts } from "./UserPosts";
 
 export default function ProfilePage() {
     const { id } = useParams<{ id: string }>();
-
-    const [isLoading, setIsLoading] = useState(true);
-    const [user, setUser] = useState<UserProfile | null>(null);
-    const [posts, setPosts] = useState<Post[]>([]);
-    const [error, setError] = useState(false);
-    // tab state: photos or texts
-    const [activeTab, setActiveTab] = useState<"photos" | "texts">("photos");
-
-    // get current logged user id directly from token
     const currentUserId = getCurrentUserId();
     const navigate = useNavigate();
 
+    const [activeTab, setActiveTab] = useState<"photos" | "texts">("photos");
+
+    const [state, setState] = useState<
+        State<{ user: UserProfile; posts: Post[] }>
+    >({
+        status: "loading",
+    });
+
     useEffect(() => {
+        if (!id) {
+            return;
+        }
+
+        const userId = id;
+
         async function loadProfile() {
-            if (!id) {
-                console.error("Aucun ID utilisateur dans l'URL.");
-                setError(true);
-                setIsLoading(false);
-                return;
-            }
-
             try {
-                setIsLoading(true);
-                setError(false);
+                console.log("Chargement du profil :", userId);
 
-                console.log("Chargement du profil :", id);
-
-                const profileRes = await fetchUserProfile(id);
+                const profileRes = await fetchUserProfile(userId);
 
                 console.log(
                     "PROFILE RESPONSE :",
@@ -58,89 +52,106 @@ export default function ProfilePage() {
                         profileRes
                     );
 
-                    setUser(null);
-                    setError(true);
+                    setState({
+                        status: "error",
+                        message: "Cette page n'est pas disponible.",
+                    });
                     return;
                 }
 
-                setUser(profileRes.data);
-
-                const postsRes = await fetchUserPosts(id);
+                const postsRes = await fetchUserPosts(userId);
 
                 console.log(
                     "POSTS RESPONSE :",
                     postsRes
                 );
 
-                if (postsRes.ok && postsRes.data) {
-                    setPosts(postsRes.data);
-                } else {
-                    setPosts([]);
-                }
+                const posts =
+                    postsRes.ok && postsRes.data
+                        ? postsRes.data
+                        : [];
+
+                setState({
+                    status: "success",
+                    data: {
+                        user: profileRes.data,
+                        posts,
+                    },
+                });
             } catch (err) {
                 console.error(
                     "Erreur inattendue :",
                     err
                 );
 
-                setUser(null);
-                setPosts([]);
-                setError(true);
-            } finally {
-                setIsLoading(false);
+                setState({
+                    status: "error",
+                    message: "Cette page n'est pas disponible.",
+                });
             }
         }
 
         loadProfile();
     }, [id]);
 
-    if (isLoading) {
-        return (
-            <div className="p-8 text-center text-zinc-400">
-                Chargement...
-            </div>
-        );
-    }
-
-    if (error || !user) {
+    if (!id) {
         return <ProfileError />;
     }
 
-    return (
-        <div className="w-full max-w-4xl mx-auto pt-8 px-4 text-white">
-            <button
-                onClick={() => navigate(-1)}
-                className="inline-flex items-center space-x-2 text-xs font-semibold text-text-secondary hover:text-text-primary transition"
-            >
-                <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                <span>Retour</span>
-            </button>
+    switch (state.status) {
+        case "loading":
+            return (
+                <div className="p-8 text-center text-zinc-400">
+                    Chargement...
+                </div>
+            );
 
-            {/* Profile top section */}
-            <ProfileHeader
-                user={user}
-                isOwner={currentUserId === user.id}
-                postsCount={posts.length}
-            />
+        case "error":
+            return <ProfileError />;
 
-            {/* Profile tabs (photos vs text posts with react icons) */}
-            <ProfileTabs
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-            />
+        case "empty":
+            return <ProfileError />;
 
-            {/* Publications list / grid */}
-            <div className="mt-4">
-                <UserPosts userId={user.id} posts={posts} activeTab={activeTab} />
-            </div>
-        </div>
-    );
+        case "success":
+            return (
+                <div className="w-full max-w-4xl mx-auto pt-8 px-4 text-white">
+                    <button
+                        type="button"
+                        onClick={() => navigate(-1)}
+                        className="inline-flex items-center space-x-2 text-xs font-semibold text-text-secondary hover:text-text-primary transition"
+                    >
+                        <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        <span>Retour</span>
+                    </button>
+
+                    <ProfileHeader
+                        user={state.data.user}
+                        isOwner={currentUserId === state.data.user.id}
+                        postsCount={state.data.posts.length}
+                    />
+
+                    <ProfileTabs
+                        activeTab={activeTab}
+                        onTabChange={setActiveTab}
+                    />
+
+                    <div className="mt-4">
+                        <UserPosts userId={state.data.user.id} posts={state.data.posts} activeTab={activeTab} />
+                    </div>
+                </div>
+            );
+
+        default: {
+            const _exhaustive: never = state;
+            return _exhaustive;
+        }
+    }
 }

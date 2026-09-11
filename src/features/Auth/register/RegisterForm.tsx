@@ -11,6 +11,12 @@ interface FormErrors {
   general?: string;
 }
 
+type State<T> =
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "empty" }
+  | { status: "success"; data: T };
+
 function RegisterForm() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -18,8 +24,7 @@ function RegisterForm() {
   const [username, setUsername] = useState("");
 
   const [errors, setErrors] = useState<FormErrors>({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [success, setSuccess] = useState("");
+  const [state, setState] = useState<State<null>>({ status: "empty" });
 
   // CHeck if all data is valid
   const validateForm = (): FormErrors => {
@@ -67,7 +72,7 @@ function RegisterForm() {
     event.preventDefault();
 
     setErrors({});
-    setSuccess("");
+    setState({ status: "empty" });
 
     // Validation FRONT
     const validationErrors = validateForm();
@@ -78,7 +83,7 @@ function RegisterForm() {
     }
 
     try {
-      setIsLoading(true);
+      setState({ status: "loading" });
 
       const res = await registerUser({
         email: email.trim(),
@@ -88,14 +93,22 @@ function RegisterForm() {
 
       if (!res.ok) {
         if (res.error.toLowerCase().includes("email")) {
-          setErrors({ email: "Cette adresse email est déjà utilisée." });
+          const message = "Cette adresse email est déjà utilisée.";
+
+          setState({ status: "error", message });
+          setErrors({ email: message });
         } else {
+          setState({ status: "error", message: res.error });
           setErrors({ general: res.error });
         }
         return;
       }
 
-      setSuccess("Ton compte a bien été créé ! Redirection...");
+      setState({
+        status: "success",
+        data: null,
+      });
+
       setPassword("");
 
       // redirect to home page after registration
@@ -104,11 +117,13 @@ function RegisterForm() {
       }, 1200);
 
     } catch {
+      const message = "Une erreur inattendue est survenue. Réessaie plus tard.";
+
+      setState({ status: "error", message });
+
       setErrors({
-        general: "Une erreur inattendue est survenue. Réessaie plus tard.",
+        general: message,
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -137,14 +152,29 @@ function RegisterForm() {
               </div>
             )}
 
-            {success && (
-              <div
-                role="status"
-                className="p-3 bg-green-950/40 border border-green-500/40 text-green-400 rounded-lg text-xs text-center"
-              >
-                {success}
-              </div>
-            )}
+            {(() => {
+              switch (state.status) {
+                case "success":
+                  return (
+                    <div
+                      role="status"
+                      className="p-3 bg-green-950/40 border border-green-500/40 text-green-400 rounded-lg text-xs text-center"
+                    >
+                      Ton compte a bien été créé ! Redirection...
+                    </div>
+                  );
+                case "loading":
+                  return null;
+                case "error":
+                  return null;
+                case "empty":
+                  return null;
+                default: {
+                  const _exhaustive: never = state;
+                  return _exhaustive;
+                }
+              }
+            })()}
 
             {/* EMAIL */}
             <div className="space-y-1">
@@ -159,7 +189,7 @@ function RegisterForm() {
                 onChange={(event) => setEmail(event.target.value)}
                 aria-invalid={Boolean(errors.email)}
                 className={`w-full px-3 py-2 bg-elevated border rounded-md text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-text-primary transition ${errors.email ? "border-error" : "border-border"
-                  }`}
+}`}
               />
               {errors.email && (
                 <p className="text-[11px] text-error">{errors.email}</p>
@@ -179,7 +209,7 @@ function RegisterForm() {
                 onChange={(event) => setUsername(event.target.value)}
                 aria-invalid={Boolean(errors.username)}
                 className={`w-full px-3 py-2 bg-elevated border rounded-md text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-text-primary transition ${errors.username ? "border-error" : "border-border"
-                  }`}
+}`}
               />
               {errors.username && (
                 <p className="text-[11px] text-error">{errors.username}</p>
@@ -200,7 +230,7 @@ function RegisterForm() {
                 aria-invalid={Boolean(errors.password)}
                 autoComplete="new-password"
                 className={`w-full px-3 py-2 bg-elevated border rounded-md text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-text-primary transition ${errors.password ? "border-error" : "border-border"
-                  }`}
+}`}
               />
               {errors.password && (
                 <p className="text-[11px] text-error">{errors.password}</p>
@@ -209,10 +239,25 @@ function RegisterForm() {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={state.status === "loading"}
               className="w-full py-2.5 px-4 bg-btn-primary hover:bg-btn-primary-hover disabled:opacity-50 text-white font-semibold text-sm rounded-lg transition cursor-pointer"
             >
-              {isLoading ? "Création du compte..." : "S'inscrire"}
+              {(() => {
+                switch (state.status) {
+                  case "loading":
+                    return "Création du compte...";
+                  case "error":
+                    return "S'inscrire";
+                  case "empty":
+                    return "S'inscrire";
+                  case "success":
+                    return "S'inscrire";
+                  default: {
+                    const _exhaustive: never = state;
+                    return _exhaustive;
+                  }
+                }
+              })()}
             </button>
           </form>
         </section>
