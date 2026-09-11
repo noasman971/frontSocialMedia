@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
-import {useNavigate, useParams} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
     fetchUserPosts,
     fetchUserProfile,
     type Post,
     type UserProfile,
 } from "./profile.api";
-import {getCurrentUserId} from "../../shared/api.ts";
-
-
+import { getCurrentUserId } from "../../shared/api.ts";
 
 export function ProfileError() {
     return (
@@ -25,8 +23,6 @@ export function ProfileError() {
     );
 }
 
-
-
 interface ProfileHeaderProps {
     user: UserProfile;
     isOwner: boolean;
@@ -34,10 +30,10 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({
-    user,
-    isOwner,
-    postsCount,
-}: ProfileHeaderProps) {
+                                user,
+                                isOwner,
+                                postsCount,
+                            }: ProfileHeaderProps) {
     return (
         <header className="flex items-start gap-12 mb-12 px-8">
             {/* Avatar */}
@@ -51,9 +47,9 @@ export function ProfileHeader({
                     </span>
 
                     {isOwner ? (
-                        <button>Modifier profil</button>
+                        <button type="button">Modifier profil</button>
                     ) : (
-                        <button>Suivre</button>
+                        <button type="button">Suivre</button>
                     )}
                 </div>
 
@@ -81,70 +77,17 @@ export function ProfileHeader({
     );
 }
 
+type State<T> =
+    | { status: "loading" }
+    | { status: "error"; message: string }
+    | { status: "empty" }
+    | { status: "success"; data: T };
 
 export function UserPosts({
-    userId,
-}: {
-    userId: string;
+                            posts,
+                        }: {
+    posts: Post[];
 }) {
-    const [posts, setPosts] = useState<Post[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(false);
-
-    useEffect(() => {
-        async function loadPosts() {
-            try {
-                setIsLoading(true);
-                setError(false);
-
-                const res = await fetchUserPosts(userId);
-
-                console.log("POSTS RESPONSE :", res);
-
-                if (!res.ok || !res.data) {
-                    console.error(
-                        "Erreur récupération posts :",
-                        res
-                    );
-
-                    setPosts([]);
-                    setError(true);
-                    return;
-                }
-
-                setPosts(res.data);
-            } catch (error) {
-                console.error(
-                    "Erreur lors du chargement des publications :",
-                    error
-                );
-
-                setPosts([]);
-                setError(true);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-
-        loadPosts();
-    }, [userId]);
-
-    if (isLoading) {
-        return (
-            <div className="text-center text-zinc-500 py-10">
-                Chargement...
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="text-center text-zinc-500 py-10">
-                Impossible de charger les publications.
-            </div>
-        );
-    }
-
     if (posts.length === 0) {
         return (
             <div className="text-center text-zinc-500 py-10">
@@ -177,35 +120,30 @@ export function UserPosts({
     );
 }
 
-
-
 export default function ProfilePage() {
     const { id } = useParams<{ id: string }>();
-
-    const [isLoading, setIsLoading] = useState(true);
-    const [user, setUser] = useState<UserProfile | null>(null);
-    const [posts, setPosts] = useState<Post[]>([]);
-    const [error, setError] = useState(false);
 
     const currentUserId = getCurrentUserId();
     const navigate = useNavigate();
 
+    const [state, setState] = useState<
+        State<{ user: UserProfile; posts: Post[] }>
+    >({
+        status: "loading",
+    });
+
     useEffect(() => {
+        if (!id) {
+            return;
+        }
+
+        const userId = id;
+
         async function loadProfile() {
-            if (!id) {
-                console.error("Aucun ID utilisateur dans l'URL.");
-                setError(true);
-                setIsLoading(false);
-                return;
-            }
-
             try {
-                setIsLoading(true);
-                setError(false);
+                console.log("Chargement du profil :", userId);
 
-                console.log("Chargement du profil :", id);
-
-                const profileRes = await fetchUserProfile(id);
+                const profileRes = await fetchUserProfile(userId);
 
                 console.log(
                     "PROFILE RESPONSE :",
@@ -218,90 +156,114 @@ export default function ProfilePage() {
                         profileRes
                     );
 
-                    setUser(null);
-                    setError(true);
+                    setState({
+                        status: "error",
+                        message: "Cette page n'est pas disponible.",
+                    });
                     return;
                 }
 
-                setUser(profileRes.data);
-
-                const postsRes = await fetchUserPosts(id);
+                const postsRes = await fetchUserPosts(userId);
 
                 console.log(
                     "POSTS RESPONSE :",
                     postsRes
                 );
 
-                if (postsRes.ok && postsRes.data) {
-                    setPosts(postsRes.data);
-                } else {
-                    setPosts([]);
-                }
+                const posts =
+                    postsRes.ok && postsRes.data
+                        ? postsRes.data
+                        : [];
+
+                setState({
+                    status: "success",
+                    data: {
+                        user: profileRes.data,
+                        posts,
+                    },
+                });
             } catch (err) {
                 console.error(
                     "Erreur inattendue :",
                     err
                 );
 
-                setUser(null);
-                setPosts([]);
-                setError(true);
-            } finally {
-                setIsLoading(false);
+                setState({
+                    status: "error",
+                    message: "Cette page n'est pas disponible.",
+                });
             }
         }
 
         loadProfile();
     }, [id]);
 
-    if (isLoading) {
-        return (
-            <div className="p-8 text-center text-zinc-400">
-                Chargement...
-            </div>
-        );
-    }
-
-    if (error || !user) {
+    if (!id) {
         return <ProfileError />;
     }
 
-    return (
-        <div className="w-full max-w-4xl mx-auto pt-8 px-4 text-white">
-            <button
-                onClick={() => navigate(-1)}
-                className="inline-flex items-center space-x-2 text-xs font-semibold text-text-secondary hover:text-text-primary transition"
-            >
-                <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                <span>Retour</span>
-            </button>
+    switch (state.status) {
+        case "loading":
+            return (
+                <div className="p-8 text-center text-zinc-400">
+                    Chargement...
+                </div>
+            );
 
-            <ProfileHeader
-                user={user}
-                isOwner={currentUserId === user.id}
-                postsCount={posts.length}
-            />
+        case "error":
+            return <ProfileError />;
 
-            {/* Onglets */}
-            <div className="border-t border-zinc-800 flex justify-center gap-12 text-xs font-semibold uppercase tracking-widest text-zinc-500">
-                <span className="text-white border-t border-white pt-4 -mt-px flex items-center gap-2 cursor-pointer">
-                    <span className="text-lg">▦</span>
-                    Publications
-                </span>
-            </div>
+        case "empty":
+            return <ProfileError />;
 
-            {/* Publications */}
-            <div className="mt-4">
-                <UserPosts userId={user.id} />
-            </div>
-        </div>
-    );
+        case "success":
+            return (
+                <div className="w-full max-w-4xl mx-auto pt-8 px-4 text-white">
+                    <button
+                        type="button"
+                        onClick={() => navigate(-1)}
+                        className="inline-flex items-center space-x-2 text-xs font-semibold text-text-secondary hover:text-text-primary transition"
+                    >
+                        <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                            />
+                        </svg>
+                        <span>Retour</span>
+                    </button>
+
+                    <ProfileHeader
+                        user={state.data.user}
+                        isOwner={currentUserId === state.data.user.id}
+                        postsCount={state.data.posts.length}
+                    />
+
+                    {/* Onglets */}
+                    <div className="border-t border-zinc-800 flex justify-center gap-12 text-xs font-semibold uppercase tracking-widest text-zinc-500">
+                        <span className="text-white border-t border-white pt-4 -mt-px flex items-center gap-2 cursor-pointer">
+                            <span className="text-lg">▦</span>
+                            Publications
+                        </span>
+                    </div>
+
+                    {/* Publications */}
+                    <div className="mt-4">
+                        <UserPosts posts={state.data.posts} />
+                    </div>
+                </div>
+            );
+
+        default: {
+            const _exhaustive: never = state;
+            return _exhaustive;
+        }
+    }
 }

@@ -8,12 +8,16 @@ import ProfilePage from "./features/Auth/profile/ProfilePage.tsx";
 // Noasman971 a retiré tout mes fucking commentaires wlh
 // -4 point pour nono
 
+
+// protect routes if user is not logged in
+// This is a Route, children will be ReactNode who are inside him (like "<HomePage />")
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem("token");
   if (!token) return <Navigate to="/register" replace />;
   return <>{children}</>;
 }
 
+// if we already have token, don't show register/login page again
 function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem("token");
   if (token) return <Navigate to="/" replace />;
