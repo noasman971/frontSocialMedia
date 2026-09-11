@@ -97,6 +97,7 @@ export async function deleteComment(
  * Create a comment for a post
  */
 export async function createComment(postId: string, content: string): Promise<ApiResult<Comment>> {
+  console.log(postId)
   return apiPost(`/api/posts/${postId}/comments`, { content }, CommentSchema);
 }
 

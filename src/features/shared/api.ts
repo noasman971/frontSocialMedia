@@ -63,6 +63,8 @@ export async function apiGet<T>(url: string, schema: z.ZodType<T>, signal?: Abor
     // We change to unknown type because we don't know yet if the data is valid
     const data: unknown = await res.json();
 
+    console.log(data)
+
     // It's zod who'll do the runtime validation (safeParse)
     const parsed = schema.safeParse(data);
     if (!parsed.success) {
@@ -112,6 +114,7 @@ export async function apiPost<T, B>(url: string, body: B, schema: z.ZodType<T>, 
     // We change to unknown type because we don't know yet if the data is valid
     const data: unknown = await res.json();
 
+    console.log(data)
     // It's zod who'll do the runtime validation (safeParse)
     const parsed = schema.safeParse(data);
     if (!parsed.success) {
