@@ -3,20 +3,14 @@ import { PostCard } from "./PostCard";
 import { usePosts } from "./usePosts";
 
 export function PostList() {
-  const { state, loadMore } = usePosts();     // our custom Hook
-  // please explain me this...
+  const { state, loadMore, removePost } = usePosts();
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const hasMore = state.status === "success" ? state.hasMore : false;
-  // https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/rootMargin
-  // https://developer.mozilla.org/fr/docs/Web/API/Intersection_Observer_API
 
-  // IntersectionObserver detect the end of the page
   useEffect(() => {
-    // Dont observe if not in success mode or if we don't reach the ref
     if (state.status !== "success" || !sentinelRef.current) return;
 
-    // 300px (rootMargin) of anticipation
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
@@ -26,7 +20,7 @@ export function PostList() {
         }
       },
       {
-        rootMargin: "300px", // Invisible marge
+        rootMargin: "300px",
       }
     );
 
@@ -37,7 +31,6 @@ export function PostList() {
       observer.unobserve(currentSentinel);
     };
   }, [state.status, hasMore, loadMore]);
-
 
   switch (state.status) {
     case "loading":
@@ -74,12 +67,14 @@ export function PostList() {
     case "success":
       return (
         <div className="divide-y divide-border w-full">
-          {/* Map foreach Post -> PostCard component with id as key */}
           {state.data.map((post) => (
-            <PostCard key={post.id} post={post} />
+            <PostCard
+              key={post.id}
+              post={post}
+              onDelete={removePost}
+            />
           ))}
 
-          {/* Invisible flag for lazy load */}
           {state.hasMore && (
             <div
               ref={sentinelRef}

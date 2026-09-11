@@ -1,0 +1,37 @@
+{
+  "id": "1",
+  "content": "Voici mon premier post ! Je teste mon application React 🚀",
+  "imageUrl": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3",
+  "createdAt": "2026-09-08T12:00:00.000Z",
+  "author": {
+    "id": "user-001",
+    "username": "john_doe",
+    "email": "john@example.com",
+    "avatarUrl": "https://i.pravatar.cc/150?img=12"
+  },
+  "comments": [
+    {
+      "id": "comment-001",
+      "content": "Super post ! 🔥",
+      "createdAt": "2026-09-08T12:15:00.000Z",
+      "author": {
+        "id": "user-002",
+        "username": "jane_doe",
+        "email": "jane@example.com",
+        "avatarUrl": "https://i.pravatar.cc/150?img=5"
+      }
+    },
+    {
+      "id": "comment-002",
+      "content": "J'aime beaucoup !",
+      "createdAt": "2026-09-08T12:30:00.000Z",
+      "author": {
+        "id": "user-003",
+        "username": "alex",
+        "email": "alex@example.com",
+        "avatarUrl": "https://i.pravatar.cc/150?img=8"
+      }
+    }
+  ],
+  "likeCount": 42
+}
