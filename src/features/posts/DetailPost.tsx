@@ -118,19 +118,7 @@ export default function DetailPost() {
                 const trimmed = newCommentText.trim();
                 if (!trimmed || !id) return;
 
-                const optimisticComment: Comment = {
-                    id: `temp-${Date.now()}`,
-                    content: trimmed,
-                    createdAt: new Date().toISOString(),
-                    author: {
-                        id: currentUserId ?? "current-user",
-                        username: "Moi",
-                        avatarUrl: null,
-                    },
-                };
-
                 const previousComments = comments;
-                setLocalComments([optimisticComment, ...previousComments]);
                 setNewCommentText("");
 
                 const res = await createComment(id, trimmed);
