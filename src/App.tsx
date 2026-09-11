@@ -5,7 +5,7 @@ import DetailPost from "./features/posts/DetailPost";
 import HomePage from "./HomePage.tsx";
 
 // Noasman971 a retiré tout mes fucking commentaires wlh
-// -2 point pour nono
+// -4 point pour nono
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem("token");

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { postComment, useDetailsPosts} from "./usePosts";
+import { useDetailsPosts} from "./usePosts";
 import { formatDate } from "../shared/date";
 import type { z } from "zod";
 import { createComment, type CommentSchema } from "./posts.api";
@@ -91,17 +91,6 @@ export default function DetailPost() {
                 setLocalComments([optimisticComment, ...comments]);
                 setNewCommentText("");
 
-                try {
-                    const result = await postComment(id, { content: trimmed });
-
-                    if (!result.ok) {
-                        console.error("Erreur lors de l'ajout du commentaire :", result.error);
-                    } else {
-                        // ...
-                    }
-                } catch (err) {
-                    console.error("Erreur réseau", err);
-                }
             };
 
             return (
