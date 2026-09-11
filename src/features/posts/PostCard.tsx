@@ -48,15 +48,37 @@ export function PostCard({ post, onDelete }: PostCardProps) {
         {/* Header Post */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-full bg-story-gradient p-[2px] flex items-center justify-center">
-              <div className="w-full h-full rounded-full bg-bg border border-bg flex items-center justify-center text-xs font-semibold uppercase text-text-primary">
-                {avatarInitials}
+            {/* Click avatar to see user profile */}
+            {post.author?.id ? (
+              <Link
+                to={`/profile/${post.author.id}`}
+                className="w-9 h-9 rounded-full bg-story-gradient p-[2px] flex items-center justify-center shrink-0 hover:opacity-90 transition"
+              >
+                <div className="w-full h-full rounded-full bg-bg border border-bg flex items-center justify-center text-xs font-semibold uppercase text-text-primary">
+                  {avatarInitials}
+                </div>
+              </Link>
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-story-gradient p-[2px] flex items-center justify-center">
+                <div className="w-full h-full rounded-full bg-bg border border-bg flex items-center justify-center text-xs font-semibold uppercase text-text-primary">
+                  {avatarInitials}
+                </div>
               </div>
-            </div>
+            )}
             <div>
-            <span className="font-semibold text-xs text-text-primary hover:text-text-secondary cursor-pointer">
-              {username}
-            </span>
+            {/* Click username to see user profile */}
+            {post.author?.id ? (
+              <Link
+                to={`/profile/${post.author.id}`}
+                className="font-semibold text-xs text-text-primary hover:text-text-secondary cursor-pointer hover:underline"
+              >
+                {username}
+              </Link>
+            ) : (
+              <span className="font-semibold text-xs text-text-primary hover:text-text-secondary cursor-pointer">
+                {username}
+              </span>
+            )}
               <span className="text-[11px] text-text-tertiary ml-2">
               {formatDate(post.created_at)}
             </span>
@@ -95,7 +117,16 @@ export function PostCard({ post, onDelete }: PostCardProps) {
         {/* Post Content (only if not empty) */}
         {post.content && post.content.trim() !== "" && (
           <div className="text-sm text-text-primary leading-relaxed">
-            <span className="font-semibold text-xs mr-2">{username}</span>
+            {post.author?.id ? (
+              <Link
+                to={`/profile/${post.author.id}`}
+                className="font-semibold text-xs mr-2 hover:underline inline-block text-text-primary"
+              >
+                {username}
+              </Link>
+            ) : (
+              <span className="font-semibold text-xs mr-2">{username}</span>
+            )}
             {post.content}
           </div>
         )}
