@@ -22,9 +22,19 @@ export default function ProfilePage() {
 
     const [activeTab, setActiveTab] = useState<"photos" | "texts">("photos");
 
-    const [state, setState] = useState<
-        State<{ user: UserProfile; posts: Post[] }>
-    >({
+    type ProfileState =
+        | { status: "loading" }
+        | { status: "error"; message: string }
+        | { status: "empty" }
+        | {
+        status: "success";
+        data: {
+            user: UserProfile;
+            posts: Post[];
+        };
+    };
+
+    const [state, setState] = useState<ProfileState>({
         status: "loading",
     });
 
