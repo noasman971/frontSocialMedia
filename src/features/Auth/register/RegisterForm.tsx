@@ -155,12 +155,11 @@ function RegisterForm() {
               switch (state.status) {
                 case "success":
                   return (
-                    <div
-                      role="status"
-                      className="p-3 bg-green-950/40 border border-green-500/40 text-green-400 rounded-lg text-xs text-center"
-                    >
+                      <output
+                          className="p-3 bg-green-950/40 border border-green-500/40 text-green-400 rounded-lg text-xs text-center"
+                      >
                       Ton compte a bien été créé ! Redirection...
-                    </div>
+                      </output>
                   );
                 case "loading":
                   return null;
