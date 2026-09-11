@@ -68,7 +68,7 @@ function LoginForm() {
         return;
       }
 
-      setState({ status: "success", data: null });
+      setState({ status: "success" });
 
       // redirect to home
       navigate("/");

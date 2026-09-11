@@ -105,8 +105,7 @@ function RegisterForm() {
       }
 
       setState({
-        status: "success",
-        data: null,
+        status: "success"
       });
 
       setPassword("");
