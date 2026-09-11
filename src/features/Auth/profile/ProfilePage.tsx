@@ -187,14 +187,8 @@ export default function ProfilePage() {
     const [posts, setPosts] = useState<Post[]>([]);
     const [error, setError] = useState(false);
 
-    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+    const currentUserId = getCurrentUserId();
     const navigate = useNavigate();
-
-    useEffect(() => {
-        const userId = getCurrentUserId();
-        setCurrentUserId(userId);
-    }, []);
-
 
     useEffect(() => {
         async function loadProfile() {
