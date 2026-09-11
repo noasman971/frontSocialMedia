@@ -15,7 +15,7 @@ type State<T> =
   | { status: "loading" }
   | { status: "error"; message: string }
   | { status: "empty" }
-  | { status: "success"; data: T };
+  | { status: "success" };
 
 function RegisterForm() {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ function RegisterForm() {
   const [username, setUsername] = useState("");
 
   const [errors, setErrors] = useState<FormErrors>({});
-  const [state, setState] = useState<State<null>>({ status: "empty" });
+  const [state, setState] = useState<State>({ status: "empty" });
 
   // CHeck if all data is valid
   const validateForm = (): FormErrors => {

@@ -13,7 +13,7 @@ type State<T> =
   | { status: "loading" }
   | { status: "error"; message: string }
   | { status: "empty" }
-  | { status: "success"; data: T };
+  | { status: "success" };
 
 function LoginForm() {
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ function LoginForm() {
   const [password, setPassword] = useState("");
 
   const [errors, setErrors] = useState<FormErrors>({});
-  const [state, setState] = useState<State<null>>({ status: "empty" });
+  const [state, setState] = useState<State>({ status: "empty" });
 
   // check if all front data is valid
   const validateForm = (): FormErrors => {
