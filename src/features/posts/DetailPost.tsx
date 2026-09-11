@@ -163,13 +163,35 @@ export default function DetailPost() {
                     <article className="space-y-4 pb-6 border-b border-border">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
-                                <div className="w-10 h-10 rounded-full bg-story-gradient p-[2px] flex items-center justify-center shrink-0">
-                                    <div className="w-full h-full rounded-full bg-bg border border-bg flex items-center justify-center text-xs font-semibold uppercase text-text-primary">
-                                        {authorInitials}
+                                {/* Click avatar to go to profile */}
+                                {post.author?.id ? (
+                                    <Link
+                                        to={`/profile/${post.author.id}`}
+                                        className="w-10 h-10 rounded-full bg-story-gradient p-[2px] flex items-center justify-center shrink-0 hover:opacity-90 transition"
+                                    >
+                                        <div className="w-full h-full rounded-full bg-bg border border-bg flex items-center justify-center text-xs font-semibold uppercase text-text-primary">
+                                            {authorInitials}
+                                        </div>
+                                    </Link>
+                                ) : (
+                                    <div className="w-10 h-10 rounded-full bg-story-gradient p-[2px] flex items-center justify-center shrink-0">
+                                        <div className="w-full h-full rounded-full bg-bg border border-bg flex items-center justify-center text-xs font-semibold uppercase text-text-primary">
+                                            {authorInitials}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                                 <div>
-                                    <h1 className="font-semibold text-sm text-text-primary">{authorName}</h1>
+                                    {/* Click author name to go to profile */}
+                                    {post.author?.id ? (
+                                        <Link
+                                            to={`/profile/${post.author.id}`}
+                                            className="font-semibold text-sm text-text-primary hover:underline block"
+                                        >
+                                            {authorName}
+                                        </Link>
+                                    ) : (
+                                        <h1 className="font-semibold text-sm text-text-primary">{authorName}</h1>
+                                    )}
                                     <time className="text-[11px] text-text-tertiary block">
                                         {formatDate(post.createdAt)}
                                     </time>
@@ -199,7 +221,16 @@ export default function DetailPost() {
 
                         {post.content && post.content.trim() !== "" && (
                             <div className="text-sm text-text-primary leading-relaxed whitespace-pre-line">
-                                <span className="font-semibold text-xs mr-2">{authorName}</span>
+                                {post.author?.id ? (
+                                    <Link
+                                        to={`/profile/${post.author.id}`}
+                                        className="font-semibold text-xs mr-2 hover:underline inline-block text-text-primary"
+                                    >
+                                        {authorName}
+                                    </Link>
+                                ) : (
+                                    <span className="font-semibold text-xs mr-2">{authorName}</span>
+                                )}
                                 {post.content}
                             </div>
                         )}
@@ -252,16 +283,36 @@ export default function DetailPost() {
 
                                     return (
                                         <div key={comment.id} className="py-3 flex items-start space-x-3">
-                                            <div className="w-7 h-7 rounded-full bg-elevated border border-border flex items-center justify-center text-[10px] font-semibold uppercase text-text-primary shrink-0">
-                                                {commentInitials}
-                                            </div>
+                                            {/* Click comment avatar to go to profile */}
+                                            {comment.author?.id ? (
+                                                <Link
+                                                    to={`/profile/${comment.author.id}`}
+                                                    className="w-7 h-7 rounded-full bg-elevated border border-border flex items-center justify-center text-[10px] font-semibold uppercase text-text-primary shrink-0 hover:opacity-80 transition"
+                                                >
+                                                    {commentInitials}
+                                                </Link>
+                                            ) : (
+                                                <div className="w-7 h-7 rounded-full bg-elevated border border-border flex items-center justify-center text-[10px] font-semibold uppercase text-text-primary shrink-0">
+                                                    {commentInitials}
+                                                </div>
+                                            )}
 
                                             <div className="flex-1 text-xs leading-relaxed">
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div>
-                                                        <span className="font-semibold text-text-primary mr-2">
-                                                            {commentAuthor}
-                                                        </span>
+                                                        {/* Click comment username to go to profile */}
+                                                        {comment.author?.id ? (
+                                                            <Link
+                                                                to={`/profile/${comment.author.id}`}
+                                                                className="font-semibold text-text-primary mr-2 hover:underline"
+                                                            >
+                                                                {commentAuthor}
+                                                            </Link>
+                                                        ) : (
+                                                            <span className="font-semibold text-text-primary mr-2">
+                                                                {commentAuthor}
+                                                            </span>
+                                                        )}
                                                         <span className="text-text-primary">{comment.content}</span>
                                                     </div>
 

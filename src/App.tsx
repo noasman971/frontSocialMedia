@@ -4,6 +4,7 @@ import LoginForm from "./features/Auth/login/LoginForm";
 import DetailPost from "./features/posts/DetailPost";
 import HomePage from "./HomePage.tsx";
 import ProfilePage from "./features/Auth/profile/ProfilePage.tsx";
+import AppLayout from "./features/shared/AppLayout.tsx";
 
 // Noasman971 a retiré tout mes fucking commentaires wlh
 // -4 point pour nono
@@ -24,11 +25,22 @@ function App() {
   return (
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-          <Route path="/posts/:id" element={<ProtectedRoute><DetailPost /></ProtectedRoute>} />
+          {/* layout with sidebar for all connected pages */}
+          <Route
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/" element={<HomePage />} />
+            <Route path="/posts/:id" element={<DetailPost />} />
+            <Route path="/profile/:id" element={<ProfilePage />} />
+          </Route>
+
+          {/* auth pages without sidebar */}
           <Route path="/register" element={<PublicOnlyRoute><RegisterForm /></PublicOnlyRoute>} />
           <Route path="/login" element={<PublicOnlyRoute><LoginForm /></PublicOnlyRoute>} />
-          <Route path="/profile/:id" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

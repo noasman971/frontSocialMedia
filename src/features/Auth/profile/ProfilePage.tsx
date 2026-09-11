@@ -1,183 +1,20 @@
 import { useEffect, useState } from "react";
-import {useNavigate, useParams} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
     fetchUserPosts,
     fetchUserProfile,
     type Post,
     type UserProfile,
 } from "./profile.api";
-import {getCurrentUserId} from "../../shared/api.ts";
+import { getCurrentUserId } from "../../shared/api.ts";
+import { ProfileHeader, ProfileError } from "./ProfileHeader";
+import { ProfileTabs } from "./ProfileTabs";
+import { UserPosts } from "./UserPosts";
 
-
-
-export function ProfileError() {
-    return (
-        <div className="p-8 text-center flex flex-col items-center gap-4">
-            <h2 className="text-xl font-bold text-white">
-                Cette page n'est pas disponible.
-            </h2>
-
-            <p className="text-zinc-400 text-sm">
-                Le lien que vous avez suivi est peut-être rompu,
-                ou la page a été supprimée.
-            </p>
-        </div>
-    );
-}
-
-
-
-interface ProfileHeaderProps {
-    user: UserProfile;
-    isOwner: boolean;
-    postsCount: number;
-}
-
-export function ProfileHeader({
-    user,
-    isOwner,
-    postsCount,
-}: ProfileHeaderProps) {
-    return (
-        <header className="flex items-start gap-12 mb-12 px-8">
-            {/* Avatar */}
-            <div className="w-36 h-36 rounded-full bg-zinc-800 shrink-0" />
-
-            <div className="flex flex-col gap-5 w-full">
-                {/* Username + bouton */}
-                <div className="flex items-center gap-4">
-                    <span className="text-xl font-medium">
-                        {user.username}
-                    </span>
-
-                    {isOwner ? (
-                        <button>Modifier profil</button>
-                    ) : (
-                        <button>Suivre</button>
-                    )}
-                </div>
-
-                {/* Statistiques */}
-                <div className="flex gap-10 text-base">
-                    <span>
-                        <span className="font-semibold">
-                            {postsCount}
-                        </span>{" "}
-                        publications
-                    </span>
-
-                    <span>
-                        <span className="font-semibold">0</span>{" "}
-                        abonnés
-                    </span>
-                </div>
-
-                {/* Bio */}
-                <div className="text-sm text-zinc-200">
-                    <p>Aucune biographie</p>
-                </div>
-            </div>
-        </header>
-    );
-}
-
-
-export function UserPosts({
-    userId,
-}: {
-    userId: string;
-}) {
-    const [posts, setPosts] = useState<Post[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(false);
-
-    useEffect(() => {
-        async function loadPosts() {
-            try {
-                setIsLoading(true);
-                setError(false);
-
-                const res = await fetchUserPosts(userId);
-
-                console.log("POSTS RESPONSE :", res);
-
-                if (!res.ok || !res.data) {
-                    console.error(
-                        "Erreur récupération posts :",
-                        res
-                    );
-
-                    setPosts([]);
-                    setError(true);
-                    return;
-                }
-
-                setPosts(res.data);
-            } catch (error) {
-                console.error(
-                    "Erreur lors du chargement des publications :",
-                    error
-                );
-
-                setPosts([]);
-                setError(true);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-
-        loadPosts();
-    }, [userId]);
-
-    if (isLoading) {
-        return (
-            <div className="text-center text-zinc-500 py-10">
-                Chargement...
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="text-center text-zinc-500 py-10">
-                Impossible de charger les publications.
-            </div>
-        );
-    }
-
-    if (posts.length === 0) {
-        return (
-            <div className="text-center text-zinc-500 py-10">
-                Aucune publication pour le moment.
-            </div>
-        );
-    }
-
-    return (
-        <div className="grid grid-cols-3 gap-1 sm:gap-4">
-            {posts.map((post) => (
-                <div
-                    key={post.id}
-                    className="aspect-square bg-zinc-800 hover:opacity-80 transition cursor-pointer overflow-hidden"
-                >
-                    {post.imageUrl ? (
-                        <img
-                            src={post.imageUrl}
-                            alt=""
-                            className="w-full h-full object-cover"
-                        />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center text-zinc-600 text-xs">
-                            Post {post.id.slice(0, 4)}
-                        </div>
-                    )}
-                </div>
-            ))}
-        </div>
-    );
-}
-
-
+// re-export components so imports from ProfilePage keep working
+export { ProfileHeader, ProfileError } from "./ProfileHeader";
+export { ProfileTabs } from "./ProfileTabs";
+export { UserPosts } from "./UserPosts";
 
 export default function ProfilePage() {
     const { id } = useParams<{ id: string }>();
@@ -186,15 +23,12 @@ export default function ProfilePage() {
     const [user, setUser] = useState<UserProfile | null>(null);
     const [posts, setPosts] = useState<Post[]>([]);
     const [error, setError] = useState(false);
+    // tab state: photos or texts
+    const [activeTab, setActiveTab] = useState<"photos" | "texts">("photos");
 
-    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+    // get current logged user id directly from token
+    const currentUserId = getCurrentUserId();
     const navigate = useNavigate();
-
-    useEffect(() => {
-        const userId = getCurrentUserId();
-        setCurrentUserId(userId);
-    }, []);
-
 
     useEffect(() => {
         async function loadProfile() {
@@ -290,23 +124,22 @@ export default function ProfilePage() {
                 <span>Retour</span>
             </button>
 
+            {/* Profile top section */}
             <ProfileHeader
                 user={user}
                 isOwner={currentUserId === user.id}
                 postsCount={posts.length}
             />
 
-            {/* Onglets */}
-            <div className="border-t border-zinc-800 flex justify-center gap-12 text-xs font-semibold uppercase tracking-widest text-zinc-500">
-                <span className="text-white border-t border-white pt-4 -mt-px flex items-center gap-2 cursor-pointer">
-                    <span className="text-lg">▦</span>
-                    Publications
-                </span>
-            </div>
+            {/* Profile tabs (photos vs text posts with react icons) */}
+            <ProfileTabs
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+            />
 
-            {/* Publications */}
+            {/* Publications list / grid */}
             <div className="mt-4">
-                <UserPosts userId={user.id} />
+                <UserPosts userId={user.id} posts={posts} activeTab={activeTab} />
             </div>
         </div>
     );
