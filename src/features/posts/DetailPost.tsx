@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useDetailsPosts } from "./usePosts";
+import { useDetailsPosts} from "./usePosts";
 import { formatDate } from "../shared/date";
 import type { z } from "zod";
 import { createComment, type CommentSchema } from "./posts.api";
@@ -66,7 +66,7 @@ export default function DetailPost() {
 
             const comments = localComments ?? post.comments;
 
-            const handleAddComment = (e: FormEvent) => {
+            const handleAddComment = async (e: FormEvent) => {
                 e.preventDefault();
                 const trimmed = newCommentText.trim();
                 if (!trimmed || !id) return;
@@ -82,10 +82,13 @@ export default function DetailPost() {
                     },
                 };
 
-                // send comment to backend
-                createComment(id, trimmed);
+                const res = await createComment(id, trimmed);
+                if (!res.ok) {
+                    setLocalComments(comments);
+                    alert("Impossible d'ajouter le commentaire");
+                }
 
-                setLocalComments([...comments, optimisticComment]);
+                setLocalComments([optimisticComment, ...comments]);
                 setNewCommentText("");
             };
 

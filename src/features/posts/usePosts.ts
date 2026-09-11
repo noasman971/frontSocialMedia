@@ -1,4 +1,4 @@
-import { type Post, type PostDetails, fetchPosts, fetchPostById } from "./posts.api";
+import {type Post, type PostDetails, fetchPosts, fetchPostById} from "./posts.api";
 import { useEffect, useState, useCallback } from "react";
 
 // the number of post to charge
